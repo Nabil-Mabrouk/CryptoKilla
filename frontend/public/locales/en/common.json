@@ -1,0 +1,252 @@
+{
+  "nav": {
+    "learn": "Learn",
+    "login": "Sign in",
+    "logout": "Sign out"
+  },
+  "learn": {
+    "title": "Catalog",
+    "premium": "Premium",
+    "empty": "No courses yet.",
+    "detail": {
+      "back": "← Back",
+      "loading": "Loading…",
+      "notFound": "Not found."
+    },
+    "lesson": {
+      "unauthorized": "Sign in to view this lesson.",
+      "forbidden": "Your account doesn't have access to this lesson."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Sign in",
+      "error": "Invalid credentials"
+    },
+    "invite": {
+      "title": "Set your password",
+      "subtitle": "Choose a password to activate your account.",
+      "password": "Password",
+      "confirm": "Confirm password",
+      "submit": "Activate my account",
+      "error": "Invalid invitation"
+    }
+  },
+  "admin": {
+    "nav": "Admin",
+    "tabs": {
+      "fleet": "Fleet",
+      "activity": "Activity",
+      "leads": "Leads",
+      "maintenance": "Maintenance",
+      "users": "Users",
+      "waitlist": "Waitlist",
+      "analytics": "Analytics",
+      "security": "Security",
+      "tutorials": "Tutorials"
+    },
+    "leads": {
+      "title": "Leads",
+      "loading": "Loading…",
+      "empty": "No leads for this project.",
+      "noProjects": "No T0 project registered.",
+      "error": "Could not load the leads.",
+      "columns": {
+        "email": "Email",
+        "source": "Source",
+        "date": "Date",
+        "verified": "Verified"
+      }
+    },
+    "maintenance": {
+      "title": "Maintenance",
+      "runsTitle": "Recent runs",
+      "scheduleTitle": "Schedule (read-only)",
+      "scheduleNote": "Changing the frequency is done on the server (crontab.fleet) — not from this table.",
+      "loading": "Loading…",
+      "empty": "No runs recorded yet.",
+      "error": "Could not load the runs.",
+      "success": "Success",
+      "failure": "Failure",
+      "columns": {
+        "job": "Job",
+        "status": "Status",
+        "summary": "Summary",
+        "project": "Project",
+        "date": "Date",
+        "frequency": "Frequency"
+      }
+    },
+    "users": {
+      "title": "Users",
+      "loading": "Loading…",
+      "empty": "No users yet.",
+      "error": "Could not load the users.",
+      "active": "Active",
+      "suspended": "Suspended",
+      "suspend": "Suspend",
+      "reactivate": "Reactivate",
+      "you": "you",
+      "columns": {
+        "email": "Email",
+        "role": "Role",
+        "status": "Status"
+      }
+    },
+    "waitlist": {
+      "title": "Waitlist",
+      "loading": "Loading…",
+      "empty": "No accounts on the waitlist.",
+      "error": "Could not load the waitlist.",
+      "invite": "Invite",
+      "sent": "Sent",
+      "columns": {
+        "email": "Email"
+      }
+    },
+    "analytics": {
+      "title": "Analytics",
+      "loading": "Loading…",
+      "empty": "No data yet.",
+      "error": "Could not load the data.",
+      "visits": "Visits",
+      "world": {
+        "title": "Visits by country",
+        "country": "Country"
+      },
+      "paths": {
+        "title": "Most visited pages",
+        "path": "Page"
+      },
+      "timeline": {
+        "title": "Visits by day",
+        "date": "Date"
+      }
+    },
+    "security": {
+      "title": "Security",
+      "loading": "Loading…",
+      "error": "Could not load the data.",
+      "total": "Total",
+      "events": {
+        "title": "Recent events",
+        "allSeverities": "All severities",
+        "empty": "No events yet.",
+        "columns": {
+          "type": "Type",
+          "severity": "Severity",
+          "ip": "IP",
+          "path": "Path",
+          "date": "Date"
+        }
+      }
+    }
+  },
+  "fleet": {
+    "grid": {
+      "title": "Fleet projects",
+      "loading": "Loading projects…",
+      "empty": "No projects registered yet.",
+      "error": "Could not load the fleet projects.",
+      "columns": {
+        "name": "Project",
+        "domain": "Domain",
+        "status": "Status",
+        "publishStatus": "Publish status",
+        "health": "Health"
+      },
+      "sortBy": "Sort by",
+      "sortDirection": "Reverse order",
+      "noDomain": "No domain",
+      "health": {
+        "healthy": "Healthy",
+        "failing": "Failing",
+        "unknown": "Unknown"
+      },
+      "lifecycle": {
+        "stopped": "Stopped",
+        "maintenance": "Maintenance"
+      },
+      "githubOk": "GitHub linked — auto redeploy",
+      "githubNoWebhook": "GitHub linked — webhook missing",
+      "githubNone": "No GitHub repository",
+      "viewProject": "View →",
+      "newProject": "+ New project"
+    },
+    "actions": {
+      "back": "← Back to fleet",
+      "loading": "Loading…",
+      "notFound": "Project not found.",
+      "promoteTitle": "Promotion",
+      "guardrailsPass": "Guardrails passed",
+      "humanApproved": "Human approved",
+      "runPromote": "Run promotion",
+      "promoted": "Promoted:",
+      "notPromoted": "Not promoted:",
+      "lifecycleTitle": "Lifecycle",
+      "lifecycleState": "Current state:",
+      "lifecycle": {
+        "normal": "online",
+        "stopped": "stopped",
+        "maintenance": "in maintenance"
+      },
+      "runStop": "Stop project",
+      "runStart": "Restart project",
+      "runMaintenance": "Switch to maintenance",
+      "runMaintenanceClear": "Exit maintenance",
+      "archiveTitle": "Archive",
+      "runArchive": "Archive project",
+      "archived": "Project archived.",
+      "alreadyArchived": "This project is already archived.",
+      "githubTitle": "GitHub Integration",
+      "githubNoRepo": "No repository linked yet.",
+      "githubRepoLinked": "Linked repository:",
+      "githubWebhookOk": "Push webhook installed — automatic redeploy active.",
+      "githubWebhookMissing": "Webhook not installed — manual redeploy required.",
+      "githubCreateRepo": "Create a repository and deploy",
+      "githubLinkRepoLabel": "Or link an existing repository (owner/repo):",
+      "githubLinkRepoPlaceholder": "my-org/my-project",
+      "githubLinkRepo": "Link this repository"
+    },
+    "create": {
+      "title": "Create a project",
+      "nameLabel": "Project name",
+      "namePlaceholder": "my-project",
+      "modulesLabel": "Modules to enable",
+      "domainLabel": "Domain (optional)",
+      "githubLabel": "GitHub",
+      "githubSkip": "No repository for now",
+      "githubCreate": "Create a new repository",
+      "githubPrivate": "Private repository",
+      "githubLink": "Link an existing repository",
+      "githubLinkPlaceholder": "my-org/my-project",
+      "submit": "Create and deploy",
+      "submitting": "Creating…",
+      "genericError": "Creation failed.",
+      "doneTitle": "Project created",
+      "summaryGenerated": "Project generated from the template.",
+      "summaryNotGenerated": "The project could not be generated.",
+      "summaryRepo": "GitHub repository:",
+      "summaryWebhookOk": "Push webhook installed — automatic redeploy active.",
+      "summaryWebhookMissing": "Webhook not installed — manual redeploy required.",
+      "summaryPushed": "Initial code pushed to the repository.",
+      "summaryNotPushed": "The initial push failed — do it manually.",
+      "summaryDeployTriggered": "Initial deploy triggered.",
+      "goToProject": "View project page"
+    }
+  },
+  "activity": {
+    "title": "Fleet activity",
+    "subtitle": "Merged lifecycle events and maintenance runs — excludes security events (isolated per project, Chap 18).",
+    "loading": "Loading…",
+    "empty": "No activity yet.",
+    "error": "Could not load the activity feed.",
+    "kind": {
+      "lifecycle": "Lifecycle",
+      "maintenance": "Maintenance"
+    }
+  }
+}

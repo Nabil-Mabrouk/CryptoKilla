@@ -1,0 +1,10 @@
+/* Thème de cryptokilla — généré depuis le branding (config.yaml).
+   Ne pas éditer à la main : modifier le branding puis `copier update`. */
+:root {
+  --color-primary: #4F46E5;
+  --color-primary-foreground: #FFFFFF;
+  --font-family-base: "Inter", system-ui, sans-serif;
+  /* Utilisé par la landing (Chap 24, skins Studio) pour les titres — les
+     autres pages de l'app (admin, apprentissage) restent sur --font-family-base. */
+  --font-family-display: "Inter", var(--font-family-base);
+}

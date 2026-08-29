@@ -1,0 +1,73 @@
+# cryptokilla
+
+Projet **GitSky**, généré par `create-gitsky-project`.
+Backend FastAPI (async) + frontend React/Vite, modules activés selon le
+catalogue du projet (Chap 2).
+
+> Ne modifiez pas le châssis à la main si vous comptez faire des `copier update` :
+> seul `frontend/src/landing-manifest.json` (la donnée de la landing produite
+> par le Studio) est gelé — tout le reste, y compris les composants React qui
+> l'affichent, est propagé depuis le template du générateur.
+> Voir [`MODULES.md`](MODULES.md) pour où étendre en sécurité chaque module
+> actif sur ce projet, et ce qu'il ne faut jamais modifier directement.
+> Voir [`AGENTS.md`](AGENTS.md) (et [`CLAUDE.md`](CLAUDE.md)) pour le cycle
+> de vie complet du projet — ce qui vous appartient, ce qui est châssis, et
+> les vérifications à faire avant de commit/push.
+
+## Lancer en local (une commande)
+
+Prérequis : **Docker** + **Docker Compose v2**.
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+
+- API : http://localhost:8000 — santé : http://localhost:8000/health
+- Frontend : http://localhost:5173
+
+Le mode dev utilise **SQLite** (aucun service à lancer) et le **hot-reload** des
+deux côtés (le code source est monté en volume). `Ctrl-C` puis
+`docker compose -f docker-compose.dev.yml down -v` pour tout arrêter et nettoyer.
+
+## Lancer sans Docker
+
+**Backend** :
+
+```bash
+python -m venv .venv && source .venv/bin/activate   # Windows : .venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.core.main:app --reload                  # http://localhost:8000
+```
+
+**Frontend** :
+
+```bash
+cd frontend
+npm install
+npm run dev                                         # http://localhost:5173
+```
+
+## Tests
+
+```bash
+cd frontend && npm test        # Vitest (frontend)
+```
+
+## Déploiement (production)
+
+Le `docker-compose.yml` (sans suffixe) est le déploiement production : images
+buildées, réseau partagé `proxy-net`, TLS Let's Encrypt via Traefik, base
+PostgreSQL dédiée. Il suppose l'infrastructure de flotte GitSky et **n'est pas
+prévu pour un poste local** — utilisez `docker-compose.dev.yml` pour développer.
+
+## Structure
+
+```
+app/
+├── core/        Toujours chargé (config, db, main, auth, seo…)
+└── modules/     Modules optionnels, chargés selon les flags MODULE_* activés
+frontend/        React + Vite
+alembic/         Migrations (core + chaînes par module)
+```
+
+Les modules actifs se lisent sur `/health` (champ `modules`).

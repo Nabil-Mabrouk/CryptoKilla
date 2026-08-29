@@ -1,0 +1,148 @@
+# docker-compose.yml — PRODUCTION, généré pour cryptokilla.
+#
+# Le développement utilise docker-compose.dev.yml (hot-reload, ports exposés,
+# db exposée pour DBeaver). Ici : images buildées, rien d'exposé hors Traefik.
+#
+# Labels Traefik pointant vers le domaine du projet ; proxy-net est le réseau
+# partagé de toute la flotte (Chap 1). internal-net est privé et isolé : la db
+# n'y est JAMAIS joignable depuis Internet (Chap 23 §2.3).
+#
+# Ne pas éditer à la main : modifier le template du générateur.
+services:
+  frontend:
+    build:
+      # Un seul chemin de build pour tous les projets (Chap 24 — décision
+      # produit : cohérence du stack, réutilisation du code, plutôt que jeter
+      # la vitrine et repartir de zéro selon les modules activés).
+      context: ./frontend
+      args:
+        # Vite inline VITE_API_URL dans le bundle au BUILD (Chap 21) : l'URL de
+        # l'API doit donc arriver ici, pas dans environment:.
+        VITE_API_URL: "https://api.cryptokilla.com"
+    container_name: cryptokilla_frontend
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend-cryptokilla.rule=Host(`cryptokilla.com`)"
+      - "traefik.http.routers.frontend-cryptokilla.entrypoints=websecure"
+      - "traefik.http.routers.frontend-cryptokilla.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend-cryptokilla.loadbalancer.server.port=3000"
+    networks:
+      - proxy-net
+      - internal-net
+    depends_on:
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cryptokilla_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+      # .env.local n'existe pas pour un projet sans credential opérateur
+      # (Chap 23) — `required: false` évite l'échec de `docker compose up`
+      # que provoquerait un `env_file:` classique pointant sur un fichier
+      # absent (comportement par défaut de Compose : erreur, pas un skip
+      # silencieux). Contient les credentials sans valeur dérivable à la
+      # génération (jeton GitHub, SMTP...) ; jamais lu par Compose pour SA
+      # PROPRE substitution ${VAR} (volumes ci-dessous) — seul .env l'est.
+      - path: .env.local
+        required: false
+    environment:
+      # Chaque projet a SON conteneur PostgreSQL, sans exception (isolation
+      # CPU/IO et plafond de connexions par projet — Chap 18 §2).
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - SECRET_KEY=${SECRET_KEY}
+      - ENVIRONMENT=production
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-cryptokilla.rule=Host(`api.cryptokilla.com`)"
+      - "traefik.http.routers.backend-cryptokilla.entrypoints=websecure"
+      - "traefik.http.routers.backend-cryptokilla.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend-cryptokilla.loadbalancer.server.port=8000"
+      # Rate limiting du login AU NIVEAU INFRA (doctrine Chap 14 : l'app
+      # journalise, Traefik/fail2ban bloquent). Routeur dédié plus prioritaire
+      # que le routeur backend, même service : seule /api/auth/login est
+      # limitée — chaque essai coûte un hachage argon2, sans limite c'est du
+      # credential stuffing et un DoS CPU à bas coût. Inconditionnel : l'auth
+      # est core, présente dans tout projet (Chap 2 §1).
+      - "traefik.http.middlewares.authlimit-cryptokilla.ratelimit.average=5"
+      - "traefik.http.middlewares.authlimit-cryptokilla.ratelimit.period=1m"
+      - "traefik.http.middlewares.authlimit-cryptokilla.ratelimit.burst=10"
+      - "traefik.http.routers.authlimit-cryptokilla.rule=Host(`api.cryptokilla.com`) && Path(`/api/auth/login`)"
+      - "traefik.http.routers.authlimit-cryptokilla.entrypoints=websecure"
+      - "traefik.http.routers.authlimit-cryptokilla.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.authlimit-cryptokilla.priority=100"
+      - "traefik.http.routers.authlimit-cryptokilla.middlewares=authlimit-cryptokilla"
+      - "traefik.http.routers.authlimit-cryptokilla.service=backend-cryptokilla"
+    networks:
+      - proxy-net
+      - internal-net
+    depends_on:
+      db:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  db:
+    image: postgres:16.3-alpine
+    container_name: cryptokilla_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    # Aucun `ports:` : la db reste strictement sur internal-net (Chap 23 §2.3).
+    networks:
+      - internal-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  migrate:
+    # Service éphémère : applique core + chaînes des modules activés, puis sort.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cryptokilla_migrate
+    command: python -m scripts.migrate
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    networks:
+      - internal-net
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+networks:
+  proxy-net:
+    external: true
+    name: proxy-net
+  internal-net:
+    driver: bridge
+    internal: true
+
+volumes:
+  db_data:

@@ -1,0 +1,252 @@
+{
+  "nav": {
+    "learn": "Apprendre",
+    "login": "Connexion",
+    "logout": "Déconnexion"
+  },
+  "learn": {
+    "title": "Catalogue",
+    "premium": "Premium",
+    "empty": "Aucun cours pour l'instant.",
+    "detail": {
+      "back": "← Retour",
+      "loading": "Chargement…",
+      "notFound": "Introuvable."
+    },
+    "lesson": {
+      "unauthorized": "Connectez-vous pour voir cette leçon.",
+      "forbidden": "Votre compte n'a pas accès à cette leçon."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "email": "Adresse email",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "error": "Identifiants invalides"
+    },
+    "invite": {
+      "title": "Définir votre mot de passe",
+      "subtitle": "Choisissez un mot de passe pour activer votre compte.",
+      "password": "Mot de passe",
+      "confirm": "Confirmer le mot de passe",
+      "submit": "Activer mon compte",
+      "error": "Invitation invalide"
+    }
+  },
+  "admin": {
+    "nav": "Admin",
+    "tabs": {
+      "fleet": "Flotte",
+      "activity": "Activité",
+      "leads": "Leads",
+      "maintenance": "Maintenance",
+      "users": "Utilisateurs",
+      "waitlist": "Waitlist",
+      "analytics": "Analytics",
+      "security": "Sécurité",
+      "tutorials": "Tutoriels"
+    },
+    "leads": {
+      "title": "Leads",
+      "loading": "Chargement…",
+      "empty": "Aucun lead pour ce projet.",
+      "noProjects": "Aucun projet T0 enregistré.",
+      "error": "Impossible de charger les leads.",
+      "columns": {
+        "email": "Email",
+        "source": "Source",
+        "date": "Date",
+        "verified": "Vérifié"
+      }
+    },
+    "maintenance": {
+      "title": "Maintenance",
+      "runsTitle": "Dernières exécutions",
+      "scheduleTitle": "Planification (lecture seule)",
+      "scheduleNote": "Modifier la fréquence se fait sur le serveur (crontab.fleet) — pas depuis ce tableau.",
+      "loading": "Chargement…",
+      "empty": "Aucune exécution enregistrée pour l'instant.",
+      "error": "Impossible de charger les exécutions.",
+      "success": "Succès",
+      "failure": "Échec",
+      "columns": {
+        "job": "Job",
+        "status": "Statut",
+        "summary": "Résumé",
+        "project": "Projet",
+        "date": "Date",
+        "frequency": "Fréquence"
+      }
+    },
+    "users": {
+      "title": "Utilisateurs",
+      "loading": "Chargement…",
+      "empty": "Aucun utilisateur pour l'instant.",
+      "error": "Impossible de charger les utilisateurs.",
+      "active": "Actif",
+      "suspended": "Suspendu",
+      "suspend": "Suspendre",
+      "reactivate": "Réactiver",
+      "you": "vous",
+      "columns": {
+        "email": "Email",
+        "role": "Rôle",
+        "status": "Statut"
+      }
+    },
+    "waitlist": {
+      "title": "Waitlist",
+      "loading": "Chargement…",
+      "empty": "Aucun compte en liste d'attente.",
+      "error": "Impossible de charger la waitlist.",
+      "invite": "Inviter",
+      "sent": "Envoyé",
+      "columns": {
+        "email": "Email"
+      }
+    },
+    "analytics": {
+      "title": "Analytics",
+      "loading": "Chargement…",
+      "empty": "Aucune donnée pour l'instant.",
+      "error": "Impossible de charger les données.",
+      "visits": "Visites",
+      "world": {
+        "title": "Visites par pays",
+        "country": "Pays"
+      },
+      "paths": {
+        "title": "Pages les plus visitées",
+        "path": "Page"
+      },
+      "timeline": {
+        "title": "Visites par jour",
+        "date": "Date"
+      }
+    },
+    "security": {
+      "title": "Sécurité",
+      "loading": "Chargement…",
+      "error": "Impossible de charger les données.",
+      "total": "Total",
+      "events": {
+        "title": "Événements récents",
+        "allSeverities": "Toutes sévérités",
+        "empty": "Aucun événement pour l'instant.",
+        "columns": {
+          "type": "Type",
+          "severity": "Sévérité",
+          "ip": "IP",
+          "path": "Page",
+          "date": "Date"
+        }
+      }
+    }
+  },
+  "fleet": {
+    "grid": {
+      "title": "Projets de la flotte",
+      "loading": "Chargement des projets…",
+      "empty": "Aucun projet enregistré pour l'instant.",
+      "error": "Impossible de charger les projets de la flotte.",
+      "columns": {
+        "name": "Projet",
+        "domain": "Domaine",
+        "status": "Statut",
+        "publishStatus": "Statut de publication",
+        "health": "Santé"
+      },
+      "sortBy": "Trier par",
+      "sortDirection": "Inverser l'ordre",
+      "noDomain": "Aucun domaine",
+      "health": {
+        "healthy": "En ligne",
+        "failing": "En panne",
+        "unknown": "Inconnue"
+      },
+      "lifecycle": {
+        "stopped": "Arrêté",
+        "maintenance": "Maintenance"
+      },
+      "githubOk": "GitHub lié — redeploy auto",
+      "githubNoWebhook": "GitHub lié — webhook manquant",
+      "githubNone": "Pas de dépôt GitHub",
+      "viewProject": "Voir →",
+      "newProject": "+ Nouveau projet"
+    },
+    "actions": {
+      "back": "← Retour à la flotte",
+      "loading": "Chargement…",
+      "notFound": "Projet introuvable.",
+      "promoteTitle": "Promotion",
+      "guardrailsPass": "Guardrails passés",
+      "humanApproved": "Approbation humaine",
+      "runPromote": "Lancer la promotion",
+      "promoted": "Promu :",
+      "notPromoted": "Non promu :",
+      "lifecycleTitle": "Cycle de vie",
+      "lifecycleState": "État actuel :",
+      "lifecycle": {
+        "normal": "en ligne",
+        "stopped": "arrêté",
+        "maintenance": "en maintenance"
+      },
+      "runStop": "Arrêter le projet",
+      "runStart": "Redémarrer le projet",
+      "runMaintenance": "Passer en maintenance",
+      "runMaintenanceClear": "Sortir de maintenance",
+      "archiveTitle": "Archivage",
+      "runArchive": "Archiver le projet",
+      "archived": "Projet archivé.",
+      "alreadyArchived": "Ce projet est déjà archivé.",
+      "githubTitle": "Intégration GitHub",
+      "githubNoRepo": "Aucun dépôt lié pour l'instant.",
+      "githubRepoLinked": "Dépôt lié :",
+      "githubWebhookOk": "Webhook push installé — redeploy automatique actif.",
+      "githubWebhookMissing": "Webhook non installé — redeploy manuel requis.",
+      "githubCreateRepo": "Créer un dépôt et déployer",
+      "githubLinkRepoLabel": "Ou lier un dépôt existant (owner/repo) :",
+      "githubLinkRepoPlaceholder": "mon-org/mon-projet",
+      "githubLinkRepo": "Lier ce dépôt"
+    },
+    "create": {
+      "title": "Créer un projet",
+      "nameLabel": "Nom du projet",
+      "namePlaceholder": "mon-projet",
+      "modulesLabel": "Modules à activer",
+      "domainLabel": "Domaine (optionnel)",
+      "githubLabel": "GitHub",
+      "githubSkip": "Pas de dépôt pour l'instant",
+      "githubCreate": "Créer un nouveau dépôt",
+      "githubPrivate": "Dépôt privé",
+      "githubLink": "Lier un dépôt existant",
+      "githubLinkPlaceholder": "mon-org/mon-projet",
+      "submit": "Créer et déployer",
+      "submitting": "Création en cours…",
+      "genericError": "La création a échoué.",
+      "doneTitle": "Projet créé",
+      "summaryGenerated": "Projet généré à partir du template.",
+      "summaryNotGenerated": "Le projet n'a pas pu être généré.",
+      "summaryRepo": "Dépôt GitHub :",
+      "summaryWebhookOk": "Webhook push installé — redeploy automatique actif.",
+      "summaryWebhookMissing": "Webhook non installé — redeploy manuel requis.",
+      "summaryPushed": "Code initial poussé vers le dépôt.",
+      "summaryNotPushed": "Le premier push a échoué — à faire à la main.",
+      "summaryDeployTriggered": "Premier déploiement déclenché.",
+      "goToProject": "Voir la fiche du projet"
+    }
+  },
+  "activity": {
+    "title": "Activité de la flotte",
+    "subtitle": "Fusion des événements de cycle de vie et des exécutions de maintenance — hors événements de sécurité (isolés par projet, Chap 18).",
+    "loading": "Chargement…",
+    "empty": "Aucune activité pour l'instant.",
+    "error": "Impossible de charger l'activité.",
+    "kind": {
+      "lifecycle": "Cycle de vie",
+      "maintenance": "Maintenance"
+    }
+  }
+}

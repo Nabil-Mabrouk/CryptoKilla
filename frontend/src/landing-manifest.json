@@ -1,0 +1,17 @@
+{
+  "project": "cryptokilla",
+  "domain": "cryptokilla.com",
+  "skin": "clean",
+  "hero_image": "",
+  "blocks": [
+  {
+    "headline": "Bienvenue",
+    "subhead": "Une nouvelle id\u00e9e \u00e0 tester.",
+    "type": "hero"
+  },
+  {
+    "cta": "Rejoindre la liste",
+    "type": "email_capture"
+  }
+]
+}
