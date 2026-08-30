@@ -8,3 +8,5 @@ fleet dashboard), et les vérifications à faire avant de commit/push.
 
 Pour les points d'extension des modules actifs sur ce projet, voir
 [`MODULES.md`](MODULES.md).
+
+Ce projet implémente CryptoKilla : lisez impérativement [ARENA.md](ARENA.md) (préséance et consignes) avant toute modification.

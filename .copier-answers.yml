@@ -1,7 +1,7 @@
 # Fichier géré par Copier — ne pas éditer à la main.
 # Il enregistre les réponses + la version du template (_commit, _src_path),
 # ce qui rend `copier update` possible (propagation des évolutions du template).
-_commit: 75bf617
+_commit: d5193a3
 _src_path: https://github.com/Nabil-Mabrouk/gitsky-template.git
 branding:
     font_family: Inter
