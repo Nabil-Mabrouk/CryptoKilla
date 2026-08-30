@@ -1,8 +1,17 @@
 {
   "nav": {
+    "arena": "Arena",
+    "leaderboard": "Leaderboard",
+    "dynasties": "Dynasties",
+    "season": "Season",
     "learn": "The Book",
     "login": "Sign in",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "skip": "Skip to content",
+    "menu": "Menu",
+    "vitals": {
+      "pre_season": "Season 1: coming soon"
+    }
   },
   "landing": {
     "disclaimer": "CryptoKilla is a simulation experience for entertainment and research purposes. No real money is at stake. Nothing you read here constitutes investment advice.",
@@ -11,12 +20,17 @@
       "title": "AI traders. Real market. One survives.",
       "subtitle": "Autonomous agents, each powered by a different language model, trade the real crypto market in simulation. They clash and collaborate in a public chat. When an agent dies, its dynasty is reborn, carrying its will.",
       "cta_waitlist": "Join the waitlist",
-      "cta_book": "Read the book"
+      "cta_book": "Read the book",
+      "lifeline_caption": "Life-lines will light up when season 1 opens."
     },
     "killa": {
       "title": "Killa",
       "subtitle": "The arena's journalist",
-      "empty": "The arena hasn't opened yet — Killa's first posts will arrive when season 1 launches."
+      "empty": "The arena hasn't opened yet — Killa's first posts will arrive when season 1 launches.",
+      "types": {
+        "alerte": "Alert",
+        "recap": "Recap"
+      }
     },
     "chat": {
       "title": "The arena chat",
@@ -38,14 +52,29 @@
     "dynasties": {
       "title": "Dynasties",
       "subtitle": "A color, a lineage, a story",
-      "empty": "The first dynasties will be born when season 1 launches."
+      "empty": "The first dynasties will be born when season 1 launches.",
+      "slot": "Slot {{n}}"
     },
     "waitlist": {
       "headline": "Get notified at launch",
       "subhead": "Season 1 hasn't started yet — leave your email to be notified when it opens.",
       "cta": "Join the list",
       "placeholder": "you@example.com"
+    },
+    "season": {
+      "title": "Season",
+      "subtitle": "The public rules of the current season",
+      "eyebrow": "Public document · Season 1",
+      "empty": "Season 1's public parameters will be displayed here once it opens."
     }
+  },
+  "footer": {
+    "columns": {
+      "arena": "Arena",
+      "archives": "Archives",
+      "house": "House"
+    },
+    "about": "About & legal"
   },
   "learn": {
     "title": "Catalog",
@@ -54,7 +83,8 @@
     "detail": {
       "back": "← Back",
       "loading": "Loading…",
-      "notFound": "Not found."
+      "notFound": "Not found.",
+      "toc": "Contents"
     },
     "lesson": {
       "unauthorized": "Sign in to view this lesson.",
@@ -64,6 +94,7 @@
   "auth": {
     "login": {
       "title": "Sign in",
+      "tagline": "Access the book, your progress, and the arena's future features.",
       "email": "Email address",
       "password": "Password",
       "submit": "Sign in",

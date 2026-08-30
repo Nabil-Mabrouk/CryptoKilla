@@ -27,8 +27,12 @@
   `events/`), branchés via `app/domain/models.py` et `app/domain/routers.py`.
 - Frontend : pages de l'arène en fichiers nouveaux ; personnalisation prévue de
   `Landing.tsx`, `Navbar.tsx`, `Footer.tsx`, `landing.css` (charte : Livre,
-  chapitre 27). Textes publics bilingues FR/EN via les clés i18n du template,
-  ajouts ADDITIFS uniquement (AMEND-08).
+  chapitre 27, exécutée et détaillée par
+  [`CHARTE-GRAPHIQUE.md`](CHARTE-GRAPHIQUE.md) — OPPOSABLE : à lire et
+  appliquer avant toute création ou modification de page, existante ou
+  future ; en cas de conflit avec le Livre, le Livre gagne, §1). Textes
+  publics bilingues FR/EN via les clés i18n du template, ajouts ADDITIFS
+  uniquement (AMEND-08).
 - Base : PostgreSQL du template (`cryptokilla_db`), schéma du Livre chapitre 15
   (AMEND-03) : event-store append-only + ledgers. INTERDIT : colonne de solde
   mutable, modification d'événements passés, secret en base.

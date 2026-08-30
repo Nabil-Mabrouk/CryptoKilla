@@ -1,6 +1,18 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { vi, describe, expect, it, beforeEach } from "vitest";
 import Navbar from "./Navbar";
+
+// Navbar utilise useLocation() (surlignage de "Le Livre" en Archives,
+// fermeture du tiroir mobile au changement de route — CHARTE-GRAPHIQUE.md
+// §7) : nécessite un contexte Router, absent avant ce round.
+function renderNavbar() {
+  return render(
+    <MemoryRouter>
+      <Navbar />
+    </MemoryRouter>,
+  );
+}
 
 const mockUseAuth = vi.fn();
 vi.mock("../../context/AuthContext", () => ({
@@ -43,17 +55,17 @@ describe("Navbar", () => {
     mockUseAuth.mockReturnValue({ user: null, logout: vi.fn() });
     stubHealth({}, "pain-scraper");
 
-    render(<Navbar />);
+    renderNavbar();
 
     await waitFor(() => expect(screen.getByText("pain-scraper")).toBeInTheDocument());
-    expect(screen.getByText("pain-scraper")).toHaveAttribute("href", "/");
+    expect(screen.getByText("pain-scraper").closest("a")).toHaveAttribute("href", "/");
   });
 
   it("n'affiche « Apprendre » que si le module tutorials est actif", async () => {
     mockUseAuth.mockReturnValue({ user: null, logout: vi.fn() });
     stubHealth({ tutorials: false });
 
-    render(<Navbar />);
+    renderNavbar();
 
     await waitFor(() => expect(screen.queryByText("nav.learn")).not.toBeInTheDocument());
   });
@@ -62,7 +74,7 @@ describe("Navbar", () => {
     mockUseAuth.mockReturnValue({ user: null, logout: vi.fn() });
     stubHealth({ tutorials: true });
 
-    render(<Navbar />);
+    renderNavbar();
 
     await waitFor(() => expect(screen.getByText("nav.learn")).toBeInTheDocument());
   });
@@ -71,7 +83,7 @@ describe("Navbar", () => {
     mockUseAuth.mockReturnValue({ user: { id: 1, email: "u@x.com", role: "user" }, logout: vi.fn() });
     stubHealth({});
 
-    render(<Navbar />);
+    renderNavbar();
 
     expect(screen.queryByText("admin.nav")).not.toBeInTheDocument();
   });
@@ -80,7 +92,7 @@ describe("Navbar", () => {
     mockUseAuth.mockReturnValue({ user: { id: 1, email: "a@x.com", role: "admin" }, logout: vi.fn() });
     stubHealth({});
 
-    render(<Navbar />);
+    renderNavbar();
 
     expect(screen.getByText("admin.nav")).toBeInTheDocument();
   });
@@ -88,12 +100,16 @@ describe("Navbar", () => {
   it("affiche nav.login quand déconnecté, nav.logout quand connecté", () => {
     mockUseAuth.mockReturnValue({ user: null, logout: vi.fn() });
     stubHealth({});
-    const { rerender } = render(<Navbar />);
+    const { rerender } = renderNavbar();
     expect(screen.getByText("nav.login")).toBeInTheDocument();
     expect(screen.queryByText("nav.logout")).not.toBeInTheDocument();
 
     mockUseAuth.mockReturnValue({ user: { id: 1, email: "a@x.com", role: "admin" }, logout: vi.fn() });
-    rerender(<Navbar />);
+    rerender(
+      <MemoryRouter>
+        <Navbar />
+      </MemoryRouter>,
+    );
     expect(screen.getByText("nav.logout")).toBeInTheDocument();
     expect(screen.queryByText("nav.login")).not.toBeInTheDocument();
   });
@@ -102,17 +118,17 @@ describe("Navbar", () => {
     mockUseAuth.mockReturnValue({ user: null, logout: vi.fn() });
     stubHealth({ i18n: false });
 
-    render(<Navbar />);
+    renderNavbar();
 
-    await waitFor(() => expect(screen.queryByText("fr")).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText("FR·EN")).not.toBeInTheDocument());
   });
 
   it("affiche le bouton de langue quand le module i18n est actif", async () => {
     mockUseAuth.mockReturnValue({ user: null, logout: vi.fn() });
     stubHealth({ i18n: true });
 
-    render(<Navbar />);
+    renderNavbar();
 
-    await waitFor(() => expect(screen.getByText("fr")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("FR·EN")).toBeInTheDocument());
   });
 });

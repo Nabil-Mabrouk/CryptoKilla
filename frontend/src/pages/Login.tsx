@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 
+// auth-header (landing.css, retour de revue design) : un formulaire nu ne
+// portait aucune trace de marque au-delà de la couleur du bouton — un
+// simple rappel eyebrow + tagline, pas une refonte en deux colonnes.
 export default function Login() {
   const { t } = useTranslation();
   const { login } = useAuth();
@@ -19,29 +22,30 @@ export default function Login() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid max-w-sm gap-3">
-      <h1 className="text-2xl font-bold">{t("auth.login.title")}</h1>
-      <input
-        className="rounded border p-2"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder={t("auth.login.email")}
-      />
-      <input
-        className="rounded border p-2"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder={t("auth.login.password")}
-      />
-      {error && <p className="text-sm text-red-600">{t("auth.login.error")}</p>}
-      <button
-        className="rounded p-2 font-medium text-white"
-        style={{ background: "var(--color-primary)" }}
-      >
-        {t("auth.login.submit")}
-      </button>
-    </form>
+    <div className="mx-auto max-w-sm">
+      <div className="auth-header">
+        <p className="eyebrow mono">{t("landing.hero.eyebrow")}</p>
+        <h1>{t("auth.login.title")}</h1>
+        <p>{t("auth.login.tagline")}</p>
+      </div>
+      <form onSubmit={onSubmit} className="grid gap-3">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t("auth.login.email")}
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder={t("auth.login.password")}
+        />
+        {error && <p className="form-error">{t("auth.login.error")}</p>}
+        <button className="btn" type="submit">
+          {t("auth.login.submit")}
+        </button>
+      </form>
+    </div>
   );
 }

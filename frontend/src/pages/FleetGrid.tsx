@@ -78,7 +78,7 @@ export default function FleetGrid() {
     return copy;
   }, [projects, sortKey, sortAsc]);
 
-  if (error) return <p className="text-sm text-red-600">{t("fleet.grid.error")}</p>;
+  if (error) return <p className="admin-error">{t("fleet.grid.error")}</p>;
   if (!projects) return <p>{t("fleet.grid.loading")}</p>;
 
   const sortOptions: { key: SortKey; label: string }[] = [
@@ -118,8 +118,8 @@ export default function FleetGrid() {
           </label>
           <Link
             to="/admin/fleet/new"
-            className="rounded p-2 text-sm font-medium text-white"
-            style={{ background: "var(--color-primary)" }}
+            className="rounded p-2 text-sm font-medium"
+            style={{ background: "var(--color-primary)", color: "var(--color-primary-foreground)" }}
           >
             {t("fleet.grid.newProject")}
           </Link>

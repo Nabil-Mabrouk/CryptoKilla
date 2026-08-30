@@ -96,7 +96,9 @@ describe("App — la racine est toujours la landing (Chap 24, round layout)", ()
     renderAppAt("/login");
     await waitFor(() => expect(screen.getByText("pain-scraper")).toBeInTheDocument());
     await waitFor(() =>
-      expect(screen.getByText(new RegExp(`© \\d{4} pain-scraper`))).toBeInTheDocument(),
+      expect(screen.getByTestId("footer-copyright").textContent).toMatch(
+        new RegExp(`© \\d{4} pain-scraper`),
+      ),
     );
   });
 });

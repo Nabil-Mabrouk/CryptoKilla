@@ -49,7 +49,7 @@ export default function Activity() {
     });
   }, []);
 
-  if (error) return <p className="text-sm text-red-600">{t("activity.error")}</p>;
+  if (error) return <p className="admin-error">{t("activity.error")}</p>;
   if (!entries) return <p>{t("activity.loading")}</p>;
 
   return (

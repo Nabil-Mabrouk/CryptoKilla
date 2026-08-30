@@ -44,7 +44,7 @@ export default function Analytics() {
 
       <section>
         <h2 className="mb-2 text-lg font-semibold">{t("admin.analytics.world.title")}</h2>
-        {world.error && <p className="text-sm text-red-600">{t("admin.analytics.error")}</p>}
+        {world.error && <p className="admin-error">{t("admin.analytics.error")}</p>}
         {!world.error && !world.data && <p>{t("admin.analytics.loading")}</p>}
         {world.data && world.data.length === 0 && <p>{t("admin.analytics.empty")}</p>}
         {world.data && world.data.length > 0 && (
@@ -69,7 +69,7 @@ export default function Analytics() {
 
       <section>
         <h2 className="mb-2 text-lg font-semibold">{t("admin.analytics.paths.title")}</h2>
-        {paths.error && <p className="text-sm text-red-600">{t("admin.analytics.error")}</p>}
+        {paths.error && <p className="admin-error">{t("admin.analytics.error")}</p>}
         {!paths.error && !paths.data && <p>{t("admin.analytics.loading")}</p>}
         {paths.data && paths.data.length === 0 && <p>{t("admin.analytics.empty")}</p>}
         {paths.data && paths.data.length > 0 && (
@@ -94,7 +94,7 @@ export default function Analytics() {
 
       <section>
         <h2 className="mb-2 text-lg font-semibold">{t("admin.analytics.timeline.title")}</h2>
-        {timeline.error && <p className="text-sm text-red-600">{t("admin.analytics.error")}</p>}
+        {timeline.error && <p className="admin-error">{t("admin.analytics.error")}</p>}
         {!timeline.error && !timeline.data && <p>{t("admin.analytics.loading")}</p>}
         {timeline.data && timeline.data.length === 0 && <p>{t("admin.analytics.empty")}</p>}
         {timeline.data && timeline.data.length > 0 && (

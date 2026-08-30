@@ -1,74 +1,57 @@
-/* Thème du shell admin (Chap 28, refonte visuelle) — même patron que
-   landing.css (:root clair par défaut + @media prefers-color-scheme: dark),
-   mais tokens préfixés --admin-* pour ne jamais entrer en collision avec
-   --bg/--surface/--text/--border de landing.css : les deux fichiers sont
-   chargés dans le même bundle (SPA non code-splittée par route), donc des
-   noms identiques sur :root s'écraseraient silencieusement selon l'ordre
-   d'import. --color-primary/--color-primary-foreground/--font-family-base
-   restent ceux de theme.css.jinja (déjà chargé globalement) — non redéfinis
-   ici, l'identité de marque ne change pas entre les pages.
-   Import uniquement depuis AdminLayout.tsx : n'affecte aucune autre page. */
+/* Theme du shell admin (CHARTE-GRAPHIQUE.md, perimetre etendu a la
+   console admin) — tokens prefixes --admin-* pour ne jamais entrer en
+   collision avec les tokens --arena- et --paper- de landing.css : les
+   deux fichiers sont charges dans le meme bundle (SPA non code-splittee
+   par route). Les valeurs --admin-* referencent directement les tokens
+   pierre de la charte (var(--arena-*)) plutot que de dupliquer des
+   couleurs : une seule source de verite pour la palette.
+
+   Pas de bascule prefers-color-scheme : la charte est explicite (section
+   11) — les deux mondes sont un choix editorial, pas un theme
+   utilisateur. La console admin reste un outil interne, mais elle vit
+   dans la meme identite constante que le reste du site, pas dans un
+   theme clair qui dependrait des preferences OS du visiteur.
+   Import uniquement depuis AdminLayout.tsx : affecte seulement cette
+   page. */
 
 :root {
-  --admin-bg: #f6f6f7;
-  --admin-surface: #ffffff;
-  --admin-surface-raised: #ffffff;
-  --admin-text: #16161a;
-  --admin-text-muted: #6b6b73;
-  --admin-border: rgba(0, 0, 0, 0.1);
-  --admin-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --admin-bg: var(--arena-bg);
+  --admin-surface: var(--arena-bg-raised);
+  --admin-surface-raised: var(--arena-bg-raised);
+  --admin-text: var(--arena-text);
+  --admin-text-muted: var(--arena-text-dim);
+  --admin-border: var(--arena-line);
+  --admin-shadow: none;
 
-  --admin-success-bg: #e6f6ec;
-  --admin-success-text: #146c2e;
-  --admin-warning-bg: #fdf3e3;
-  --admin-warning-text: #92600a;
-  --admin-danger-bg: #fbe9e9;
-  --admin-danger-text: #a3211f;
-  --admin-info-bg: #e8f0fe;
-  --admin-info-text: #1a4fb4;
-  --admin-neutral-bg: #eeeef0;
-  --admin-neutral-text: #52525b;
+  --admin-success-bg: color-mix(in srgb, var(--pnl-up) 16%, transparent);
+  --admin-success-text: var(--pnl-up);
+  --admin-warning-bg: color-mix(in srgb, var(--torch) 16%, transparent);
+  --admin-warning-text: var(--torch);
+  --admin-danger-bg: color-mix(in srgb, var(--pnl-down) 16%, transparent);
+  --admin-danger-text: var(--pnl-down);
+  --admin-info-bg: color-mix(in srgb, var(--arena-text-dim) 16%, transparent);
+  --admin-info-text: var(--arena-text);
+  --admin-neutral-bg: color-mix(in srgb, var(--arena-text-faint) 20%, transparent);
+  --admin-neutral-text: var(--arena-text-dim);
 }
 
-/* Dark mode automatique (OS/navigateur), zéro JS — même choix que la
-   landing : pas de toggle, --color-primary ne change pas entre les deux. */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --admin-bg: #0e0e10;
-    --admin-surface: #18181b;
-    --admin-surface-raised: #202024;
-    --admin-text: #f2f2f0;
-    --admin-text-muted: #9b9ba3;
-    --admin-border: rgba(255, 255, 255, 0.1);
-    --admin-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.4);
-
-    --admin-success-bg: rgba(34, 197, 94, 0.16);
-    --admin-success-text: #4ade80;
-    --admin-warning-bg: rgba(245, 158, 11, 0.16);
-    --admin-warning-text: #fbbf24;
-    --admin-danger-bg: rgba(239, 68, 68, 0.16);
-    --admin-danger-text: #f87171;
-    --admin-info-bg: rgba(59, 130, 246, 0.16);
-    --admin-info-text: #93c5fd;
-    --admin-neutral-bg: rgba(255, 255, 255, 0.08);
-    --admin-neutral-text: #c4c4cc;
-  }
-}
-
-/* Pas de min-height: 100vh ici : .admin-shell est imbriqué dans le <main
-   className="p-6"> du shell applicatif (App.tsx), qui a lui-même sa propre
-   hauteur de contenu — forcer 100vh en plus de ce padding externe créerait
-   un double défilement. margin: -1.5rem étend la surface admin jusqu'aux
-   bords du <main> parent (dont le padding reste utile aux autres pages :
-   Apprentissage, Connexion, etc.) sans dupliquer la marge visuellement. */
+/* Pas de min-height: 100vh ici : .admin-shell est imbrique dans le main
+   avec padding du shell applicatif (App.tsx), qui a deja sa propre
+   hauteur de contenu — forcer 100vh en plus de ce padding externe
+   creerait un double defilement. margin: -1.5rem etend la surface admin
+   jusquaux bords du main parent (dont le padding reste utile aux autres
+   pages : apprentissage, connexion, etc.) sans dupliquer la marge
+   visuellement. Meme patron repris par .world-archives dans landing.css. */
 .admin-shell {
   background: var(--admin-bg);
   color: var(--admin-text);
   margin: -1.5rem;
   min-height: calc(100vh - 4.5rem);
+  font-family: var(--font-family-base);
 }
 
 .admin-shell a { color: inherit; }
+.admin-shell h1, .admin-shell h2, .admin-shell h3 { font-family: var(--font-family-display); }
 
 .admin-sidebar {
   background: var(--admin-surface);
@@ -79,30 +62,30 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  border-radius: 0.5rem;
+  border-radius: 2px;
   padding: 0.55rem 0.75rem;
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--admin-text-muted);
   text-decoration: none;
-  transition: background 0.12s ease, color 0.12s ease;
+  transition: background var(--dur-micro, 0.14s) ease, color var(--dur-micro, 0.14s) ease;
 }
 
 .admin-sidebar .admin-nav-link:hover {
-  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  background: color-mix(in srgb, var(--torch) 10%, transparent);
   color: var(--admin-text);
 }
 
 .admin-sidebar .admin-nav-link.active {
-  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
-  color: var(--color-primary);
+  background: color-mix(in srgb, var(--torch) 16%, transparent);
+  color: var(--torch);
   font-weight: 600;
 }
 
 .admin-card {
   background: var(--admin-surface-raised);
   border: 1px solid var(--admin-border);
-  border-radius: 0.75rem;
+  border-radius: 2px;
   box-shadow: var(--admin-shadow);
 }
 
@@ -110,8 +93,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  border-radius: 999px;
+  border-radius: 2px;
   padding: 0.15rem 0.6rem;
+  font-family: var(--font-family-mono);
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.4;
@@ -131,3 +115,55 @@
 .admin-badge--danger { background: var(--admin-danger-bg); color: var(--admin-danger-text); }
 .admin-badge--info { background: var(--admin-info-bg); color: var(--admin-info-text); }
 .admin-badge--neutral { background: var(--admin-neutral-bg); color: var(--admin-neutral-text); }
+
+/* Remplace les classes Tailwind de couleur brutes trouvées dans les pages
+   admin (bg-white, bg-black/*, text-red-*, bg-gray-*, text-gray-*), qui
+   restaient sur une palette Studio claire sans lien avec la charte. */
+.admin-shell input,
+.admin-shell select,
+.admin-shell textarea {
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+  border-radius: 2px;
+  padding: 0.5rem 0.7rem;
+  font: inherit;
+}
+.admin-shell input:focus,
+.admin-shell select:focus,
+.admin-shell textarea:focus {
+  outline: none;
+  border-color: var(--torch);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--torch) 35%, transparent);
+}
+.admin-shell table { border-collapse: collapse; width: 100%; }
+.admin-shell th {
+  text-align: left;
+  font-family: var(--font-family-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--admin-text-muted);
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--admin-border);
+}
+.admin-shell td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--admin-border);
+  font-family: var(--font-family-mono);
+}
+.admin-shell tr:last-child td { border-bottom: none; }
+.admin-shell .admin-error { color: var(--pnl-down); font-size: 0.85rem; }
+.admin-shell .admin-muted { color: var(--admin-text-muted); }
+.admin-shell .admin-btn-inline {
+  border: 1px solid var(--admin-border);
+  border-radius: 2px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+  background: transparent;
+  color: var(--admin-text);
+}
+.admin-shell .admin-btn-inline:hover {
+  background: color-mix(in srgb, var(--torch) 10%, transparent);
+  border-color: var(--torch);
+}

@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 
 // Landing (Chap 27, identité CryptoKilla) n'assemble plus les blocs
@@ -39,7 +40,11 @@ import Landing from "./Landing";
 
 describe("Landing", () => {
   it("rend le hero, les 4 sections réservées, la liste d'attente, et le Footer", async () => {
-    render(<Landing />);
+    render(
+      <MemoryRouter>
+        <Landing />
+      </MemoryRouter>,
+    );
 
     await waitFor(() => expect(screen.getByText("cryptokilla")).toBeInTheDocument());
     expect(screen.getByText("landing.hero.title")).toBeInTheDocument();
@@ -49,17 +54,25 @@ describe("Landing", () => {
     expect(screen.getByText("landing.dynasties.empty")).toBeInTheDocument();
     expect(screen.getByText("landing.waitlist.headline")).toBeInTheDocument();
     await waitFor(() =>
-      expect(screen.getByText(/© \d{4} cryptokilla/)).toBeInTheDocument(),
+      expect(screen.getByTestId("footer-copyright").textContent).toMatch(/© \d{4} cryptokilla/),
     );
   });
 
   it("affiche le bandeau disclaimer permanent (Livre, chapitre 25, N-C25-07)", () => {
-    render(<Landing />);
+    render(
+      <MemoryRouter>
+        <Landing />
+      </MemoryRouter>,
+    );
     expect(screen.getByText("landing.disclaimer")).toBeInTheDocument();
   });
 
   it("pose un repère stable sur la racine pour les tests de routage", () => {
-    render(<Landing />);
+    render(
+      <MemoryRouter>
+        <Landing />
+      </MemoryRouter>,
+    );
     expect(screen.getByTestId("landing-page")).toHaveClass("landing");
   });
 });

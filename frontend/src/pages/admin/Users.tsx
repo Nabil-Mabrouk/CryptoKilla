@@ -39,7 +39,7 @@ export default function Users() {
     }
   }
 
-  if (error) return <p className="text-sm text-red-600">{t("admin.users.error")}</p>;
+  if (error) return <p className="admin-error">{t("admin.users.error")}</p>;
   if (!users) return <p>{t("admin.users.loading")}</p>;
   if (users.length === 0) return <p>{t("admin.users.empty")}</p>;
 
@@ -66,7 +66,7 @@ export default function Users() {
               <tr key={u.id} className="border-b">
                 <td className="p-2">
                   {u.email}
-                  {isSelf && <span className="ml-1 text-black/40">({t("admin.users.you")})</span>}
+                  {isSelf && <span className="ml-1 admin-muted">({t("admin.users.you")})</span>}
                 </td>
                 <td className="p-2">
                   <select
@@ -89,7 +89,7 @@ export default function Users() {
                   <button
                     onClick={() => updateUser(u.id, { is_active: !u.is_active })}
                     disabled={isSelf}
-                    className="rounded border p-1 text-sm hover:bg-black/5 disabled:opacity-50"
+                    className="admin-btn-inline disabled:opacity-50"
                   >
                     {u.is_active ? t("admin.users.suspend") : t("admin.users.reactivate")}
                   </button>

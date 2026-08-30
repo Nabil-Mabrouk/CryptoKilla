@@ -41,30 +41,30 @@ export default function AcceptInvite() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid max-w-sm gap-3">
-      <h1 className="text-2xl font-bold">{t("auth.invite.title")}</h1>
-      <p className="text-sm text-black/60">{t("auth.invite.subtitle")}</p>
-      <input
-        className="rounded border p-2"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder={t("auth.invite.password")}
-      />
-      <input
-        className="rounded border p-2"
-        type="password"
-        value={confirm}
-        onChange={(e) => setConfirm(e.target.value)}
-        placeholder={t("auth.invite.confirm")}
-      />
-      {error && <p className="text-sm text-red-600">{t("auth.invite.error")}</p>}
-      <button
-        className="rounded p-2 font-medium text-white"
-        style={{ background: "var(--color-primary)" }}
-      >
-        {t("auth.invite.submit")}
-      </button>
-    </form>
+    <div className="mx-auto max-w-sm">
+      <div className="auth-header">
+        <p className="eyebrow mono">{t("landing.hero.eyebrow")}</p>
+        <h1>{t("auth.invite.title")}</h1>
+        <p>{t("auth.invite.subtitle")}</p>
+      </div>
+      <form onSubmit={onSubmit} className="grid gap-3">
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder={t("auth.invite.password")}
+        />
+        <input
+          type="password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          placeholder={t("auth.invite.confirm")}
+        />
+        {error && <p className="form-error">{t("auth.invite.error")}</p>}
+        <button className="btn" type="submit">
+          {t("auth.invite.submit")}
+        </button>
+      </form>
+    </div>
   );
 }

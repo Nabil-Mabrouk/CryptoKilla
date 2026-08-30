@@ -62,7 +62,7 @@ export default function Leads() {
         ))}
       </select>
 
-      {error && <p className="text-sm text-red-600">{t("admin.leads.error")}</p>}
+      {error && <p className="admin-error">{t("admin.leads.error")}</p>}
       {!error && leads === null && <p>{t("admin.leads.loading")}</p>}
       {!error && leads !== null && leads.length === 0 && <p>{t("admin.leads.empty")}</p>}
       {!error && leads !== null && leads.length > 0 && (

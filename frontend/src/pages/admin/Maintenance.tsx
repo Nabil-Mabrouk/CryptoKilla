@@ -48,7 +48,7 @@ export default function Maintenance() {
       <h1 className="mb-4 text-2xl font-bold">{t("admin.maintenance.title")}</h1>
 
       <h2 className="mb-2 text-lg font-semibold">{t("admin.maintenance.runsTitle")}</h2>
-      {error && <p className="text-sm text-red-600">{t("admin.maintenance.error")}</p>}
+      {error && <p className="admin-error">{t("admin.maintenance.error")}</p>}
       {!error && runs === null && <p>{t("admin.maintenance.loading")}</p>}
       {!error && runs !== null && runs.length === 0 && <p>{t("admin.maintenance.empty")}</p>}
       {!error && runs !== null && runs.length > 0 && (
@@ -66,7 +66,10 @@ export default function Maintenance() {
             {runs.map((run) => (
               <tr key={run.id} className="border-b">
                 <td className="p-2">{run.job}</td>
-                <td className={`p-2 ${run.status === "failure" ? "text-red-600" : ""}`}>
+                <td
+                  className="p-2"
+                  style={run.status === "failure" ? { color: "var(--pnl-down)" } : undefined}
+                >
                   {run.status === "failure"
                     ? t("admin.maintenance.failure")
                     : t("admin.maintenance.success")}
@@ -83,7 +86,7 @@ export default function Maintenance() {
       )}
 
       <h2 className="mb-2 text-lg font-semibold">{t("admin.maintenance.scheduleTitle")}</h2>
-      <p className="mb-2 text-sm text-black/60">{t("admin.maintenance.scheduleNote")}</p>
+      <p className="mb-2 text-sm admin-muted">{t("admin.maintenance.scheduleNote")}</p>
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b">

@@ -122,7 +122,7 @@ export default function ProjectActions() {
     }
   }
 
-  if (notFound) return <p className="text-sm text-red-600">{t("fleet.actions.notFound")}</p>;
+  if (notFound) return <p className="admin-error">{t("fleet.actions.notFound")}</p>;
   if (!project) return <p>{t("fleet.actions.loading")}</p>;
 
   return (
@@ -131,7 +131,7 @@ export default function ProjectActions() {
         {t("fleet.actions.back")}
       </Link>
       <h1 className="mb-1 text-2xl font-bold">{project.name}</h1>
-      <p className="mb-4 text-sm text-black/60">
+      <p className="mb-4 text-sm admin-muted">
         {project.status} · {project.publish_status}
       </p>
 
@@ -154,8 +154,8 @@ export default function ProjectActions() {
           {t("fleet.actions.humanApproved")}
         </label>
         <button
-          className="rounded p-2 text-sm font-medium text-white"
-          style={{ background: "var(--color-primary)" }}
+          className="rounded p-2 text-sm font-medium"
+          style={{ background: "var(--color-primary)", color: "var(--color-primary-foreground)" }}
         >
           {t("fleet.actions.runPromote")}
         </button>
@@ -169,7 +169,7 @@ export default function ProjectActions() {
       )}
 
       <h2 className="mb-2 mt-6 text-lg font-semibold">{t("fleet.actions.lifecycleTitle")}</h2>
-      <p className="mb-2 text-sm text-black/60">
+      <p className="mb-2 text-sm admin-muted">
         {t("fleet.actions.lifecycleState")} {t(`fleet.actions.lifecycle.${project.lifecycle_state}`, project.lifecycle_state)}
       </p>
       <div className="mb-4 flex flex-wrap gap-2">
@@ -192,8 +192,8 @@ export default function ProjectActions() {
         {project.lifecycle_state === "stopped" && (
           <button
             onClick={() => submitLifecycleAction("start")}
-            className="rounded p-2 text-sm font-medium text-white"
-            style={{ background: "var(--color-primary)" }}
+            className="rounded p-2 text-sm font-medium"
+            style={{ background: "var(--color-primary)", color: "var(--color-primary-foreground)" }}
           >
             {t("fleet.actions.runStart")}
           </button>
@@ -201,8 +201,8 @@ export default function ProjectActions() {
         {project.lifecycle_state === "maintenance" && (
           <button
             onClick={() => submitLifecycleAction("maintenance-clear")}
-            className="rounded p-2 text-sm font-medium text-white"
-            style={{ background: "var(--color-primary)" }}
+            className="rounded p-2 text-sm font-medium"
+            style={{ background: "var(--color-primary)", color: "var(--color-primary-foreground)" }}
           >
             {t("fleet.actions.runMaintenanceClear")}
           </button>
@@ -211,11 +211,12 @@ export default function ProjectActions() {
 
       <h2 className="mb-2 mt-6 text-lg font-semibold">{t("fleet.actions.archiveTitle")}</h2>
       {project.status === "archived" ? (
-        <p className="text-sm text-black/60">{t("fleet.actions.alreadyArchived")}</p>
+        <p className="text-sm admin-muted">{t("fleet.actions.alreadyArchived")}</p>
       ) : (
         <button
           onClick={submitArchive}
-          className="rounded bg-red-700 p-2 text-sm font-medium text-white"
+          className="rounded p-2 text-sm font-medium"
+          style={{ border: "1px solid var(--pnl-down)", color: "var(--pnl-down)", background: "transparent" }}
         >
           {t("fleet.actions.runArchive")}
         </button>
@@ -227,19 +228,19 @@ export default function ProjectActions() {
         <p className="mb-2 text-sm">
           {t("fleet.actions.githubRepoLinked")} <strong>{project.github_repo}</strong>
           <br />
-          <span className="text-black/60">
+          <span className="admin-muted">
             {project.github_webhook_installed
               ? t("fleet.actions.githubWebhookOk")
               : t("fleet.actions.githubWebhookMissing")}
           </span>
         </p>
       ) : (
-        <p className="mb-2 text-sm text-black/60">{t("fleet.actions.githubNoRepo")}</p>
+        <p className="mb-2 text-sm admin-muted">{t("fleet.actions.githubNoRepo")}</p>
       )}
       <button
         onClick={submitCreateRepo}
-        className="mb-3 rounded p-2 text-sm font-medium text-white"
-        style={{ background: "var(--color-primary)" }}
+        className="mb-3 rounded p-2 text-sm font-medium"
+        style={{ background: "var(--color-primary)", color: "var(--color-primary-foreground)" }}
       >
         {t("fleet.actions.githubCreateRepo")}
       </button>
@@ -257,7 +258,7 @@ export default function ProjectActions() {
         </button>
       </form>
       {githubResult && githubResult.message && (
-        <p className="mt-2 text-sm text-black/60">{githubResult.message}</p>
+        <p className="mt-2 text-sm admin-muted">{githubResult.message}</p>
       )}
     </div>
   );

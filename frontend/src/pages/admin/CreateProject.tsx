@@ -86,7 +86,7 @@ export default function CreateProject() {
           </Link>{" "}
           — {result.project.status}
         </p>
-        <ul className="mb-4 text-sm text-black/60">
+        <ul className="mb-4 text-sm admin-muted">
           <li>{result.generated ? t("fleet.create.summaryGenerated") : t("fleet.create.summaryNotGenerated")}</li>
           {result.github_repo && (
             <li>
@@ -114,8 +114,8 @@ export default function CreateProject() {
         )}
         <button
           onClick={() => navigate(`/admin/fleet/${result.project.name}`)}
-          className="rounded p-2 text-sm font-medium text-white"
-          style={{ background: "var(--color-primary)" }}
+          className="rounded p-2 text-sm font-medium"
+          style={{ background: "var(--color-primary)", color: "var(--color-primary-foreground)" }}
         >
           {t("fleet.create.goToProject")}
         </button>
@@ -220,12 +220,12 @@ export default function CreateProject() {
 
         <button
           disabled={submitting}
-          className="rounded p-2 text-sm font-medium text-white disabled:opacity-50"
-          style={{ background: "var(--color-primary)" }}
+          className="rounded p-2 text-sm font-medium disabled:opacity-50"
+          style={{ background: "var(--color-primary)", color: "var(--color-primary-foreground)" }}
         >
           {submitting ? t("fleet.create.submitting") : t("fleet.create.submit")}
         </button>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="admin-error">{error}</p>}
       </form>
     </div>
   );

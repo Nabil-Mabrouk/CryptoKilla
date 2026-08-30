@@ -12,6 +12,7 @@ interface Tutorial {
 }
 
 // Catalogue public : ne montre que les cours de la langue courante (Chap 11).
+// Monde Archives (CHARTE-GRAPHIQUE.md §9) : fond papier, Chronique.
 export default function Learn() {
   const { t, i18n } = useTranslation();
   const [tutorials, setTutorials] = useState<Tutorial[]>([]);
@@ -24,21 +25,19 @@ export default function Learn() {
   }, [i18n.language]);
 
   return (
-    <section>
-      <h1 className="text-2xl font-bold">{t("learn.title")}</h1>
-      <ul className="mt-4 grid gap-2">
+    <div className="world-archives">
+      <h1 className="archives-title">{t("learn.title")}</h1>
+      <ul className="archives-list">
         {tutorials.map((tut) => (
           <li key={tut.id} className="list-row">
-            <Link to={`/learn/${tut.slug}`} className="font-medium">
-              {tut.title}
-            </Link>
+            <Link to={`/learn/${tut.slug}`}>{tut.title}</Link>
             {tut.access_role !== "anonymous" && (
-              <span className="badge ml-2 px-2 py-0.5 text-xs">{t("learn.premium")}</span>
+              <span className="badge">{t("learn.premium")}</span>
             )}
           </li>
         ))}
-        {tutorials.length === 0 && <li className="text-sm opacity-60">{t("learn.empty")}</li>}
+        {tutorials.length === 0 && <li className="archives-empty">{t("learn.empty")}</li>}
       </ul>
-    </section>
+    </div>
   );
 }

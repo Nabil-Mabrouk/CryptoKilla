@@ -2,17 +2,11 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../../api";
 
-// Footer partagé par la landing ET le reste de l'app (Chap 24, round
-// theming) — minimal par défaut, à personnaliser librement (AGENTS.md).
-// Pas de contenu inventé au-delà du copyright : pas de fausses mentions
-// légales, pas de liens qui ne mènent nulle part. Autonome (GET /health,
-// même patron que Navbar) plutôt qu'une prop `project` : usable tel quel
-// sur n'importe quelle page, sans faire remonter cet état plus haut.
-//
-// Le bandeau disclaimer (Livre, chapitre 25, N-C25-07 : "bandeau permanent
-// sur toute la plateforme") vit ici plutôt que dans un composant sticky à
-// part : le Footer est déjà présent sur chaque page — pas de nouvelle
-// surface à ajouter pour satisfaire cette exigence.
+// Footer — trois colonnes (CHARTE-GRAPHIQUE.md §9) : l'Arène (ancres de la
+// landing), les Archives (le Livre), la Maison (à propos/disclaimer). Pas
+// de colonne contact/réseaux sociaux : aucun compte réel n'existe dans le
+// Livre ni la configuration du projet — en inventer un serait une donnée
+// fabriquée (R-93). Autonome (GET /health), même patron que Navbar.
 export default function Footer() {
   const { t } = useTranslation();
   const [project, setProject] = useState("");
@@ -26,9 +20,29 @@ export default function Footer() {
 
   return (
     <footer className="site-footer">
-      <p className="disclaimer">{t("landing.disclaimer")}</p>
-      <p>
-        © {new Date().getFullYear()} {project}
+      <div className="footer-columns">
+        <div className="footer-col">
+          <p className="footer-col-title">{t("footer.columns.arena")}</p>
+          <a href="/#arene">{t("nav.arena")}</a>
+          <a href="/#classement">{t("nav.leaderboard")}</a>
+          <a href="/#dynasties">{t("nav.dynasties")}</a>
+          <a href="/#saison">{t("nav.season")}</a>
+        </div>
+        <div className="footer-col">
+          <p className="footer-col-title">{t("footer.columns.archives")}</p>
+          <a href="/learn">{t("nav.learn")}</a>
+        </div>
+        <div className="footer-col">
+          <p className="footer-col-title">{t("footer.columns.house")}</p>
+          <a href="#disclaimer">{t("footer.about")}</a>
+        </div>
+      </div>
+
+      <p className="disclaimer" id="disclaimer">
+        {t("landing.disclaimer")}
+      </p>
+      <p className="footer-mono mono" data-testid="footer-copyright">
+        <span aria-hidden="true">CK</span> · © {new Date().getFullYear()} {project}
       </p>
     </footer>
   );

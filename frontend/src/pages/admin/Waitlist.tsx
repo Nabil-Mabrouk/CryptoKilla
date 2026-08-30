@@ -29,7 +29,7 @@ export default function Waitlist() {
     if (r.ok) setSentIds((prev) => new Set(prev).add(id));
   }
 
-  if (error) return <p className="text-sm text-red-600">{t("admin.waitlist.error")}</p>;
+  if (error) return <p className="admin-error">{t("admin.waitlist.error")}</p>;
   if (!users) return <p>{t("admin.waitlist.loading")}</p>;
   if (users.length === 0) return <p>{t("admin.waitlist.empty")}</p>;
 
@@ -50,7 +50,7 @@ export default function Waitlist() {
               <td className="p-2">
                 <button
                   onClick={() => invite(u.id)}
-                  className="rounded border p-1 text-sm hover:bg-black/5"
+                  className="admin-btn-inline"
                 >
                   {sentIds.has(u.id) ? t("admin.waitlist.sent") : t("admin.waitlist.invite")}
                 </button>

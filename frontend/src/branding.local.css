@@ -14,19 +14,21 @@
    --color-primary-foreground
    --font-family-base
    --font-family-display
-
-   Exemple :
-   :root {
-     --color-primary: #16a34a;
-   }
 */
 
-/* CryptoKilla (Livre, chapitre 27) : --color-primary reste l'indigo/violet
-   par défaut du Studio — déjà assez saturé pour servir d'accent néon sur
-   fond sombre (landing.css). Seule la police d'affichage change, pour une
-   identité plus technique/arène que l'Inter par défaut. Police chargée
-   dans landing.css (une seule requête réseau pour titres + données). */
+/* CryptoKilla (CHARTE-GRAPHIQUE.md, section 2/3) : --color-primary/
+   --color-primary-foreground alignés sur --torch (l'or de torche, seul
+   accent du chrome) pour que les composants châssis réutilisés tels quels
+   (EmailCapture, boutons admin génériques utilisant var(--color-primary))
+   restent cohérents avec la charte sans dupliquer la logique de bouton.
+   --font-family-display = Affiche (Anton), --font-family-base = Chronique
+   (Spectral, voix par défaut du corps de texte). Les tokens complets de la
+   charte (tokens pierre/papier/dynastie, polices Terminal) vivent dans
+   landing.css, seul fichier à toucher pour l'identité complète — ici on
+   n'aligne que les deux points d'extension prévus par le châssis. */
 :root {
-  --font-family-display: "Space Grotesk", var(--font-family-base);
+  --color-primary: #C9A050;
+  --color-primary-foreground: #17130F;
+  --font-family-display: "Anton", "Archivo Black", sans-serif;
+  --font-family-base: "Spectral", Georgia, serif;
 }
-

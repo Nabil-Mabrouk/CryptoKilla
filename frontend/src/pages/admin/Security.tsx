@@ -48,17 +48,17 @@ export default function Security() {
       <h1 className="text-2xl font-bold">{t("admin.security.title")}</h1>
 
       <section>
-        {summaryError && <p className="text-sm text-red-600">{t("admin.security.error")}</p>}
+        {summaryError && <p className="admin-error">{t("admin.security.error")}</p>}
         {!summaryError && !summary && <p>{t("admin.security.loading")}</p>}
         {summary && (
           <div className="flex gap-4">
             <div className="rounded border p-3">
-              <div className="text-xs uppercase text-black/60">{t("admin.security.total")}</div>
+              <div className="text-xs uppercase admin-muted">{t("admin.security.total")}</div>
               <div className="text-xl font-bold">{summary.total}</div>
             </div>
             {SEVERITIES.filter((sev) => summary.by_severity[sev]).map((sev) => (
               <div key={sev} className="rounded border p-3">
-                <div className="text-xs uppercase text-black/60">{sev}</div>
+                <div className="text-xs uppercase admin-muted">{sev}</div>
                 <div className="text-xl font-bold">{summary.by_severity[sev]}</div>
               </div>
             ))}
@@ -82,7 +82,7 @@ export default function Security() {
             ))}
           </select>
         </div>
-        {eventsError && <p className="text-sm text-red-600">{t("admin.security.error")}</p>}
+        {eventsError && <p className="admin-error">{t("admin.security.error")}</p>}
         {!eventsError && !events && <p>{t("admin.security.loading")}</p>}
         {events && events.length === 0 && <p>{t("admin.security.events.empty")}</p>}
         {events && events.length > 0 && (

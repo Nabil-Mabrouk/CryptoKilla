@@ -1,211 +1,561 @@
-/* Identité visuelle CryptoKilla (Chap 27 du livre : arène nocturne, néon,
-   données comme décor). Remplace le système générique à 3 skins Studio
-   (clean/editorial/bold) — CryptoKilla n'a besoin que d'une seule
-   identité, engagée, pas d'un thème configurable. Le mécanisme de tokens
-   CSS custom properties est conservé tel quel (repris de la version
-   Studio), seules les valeurs et les règles de composants changent.
+/* Identité visuelle CryptoKilla — exécute CHARTE-GRAPHIQUE.md (racine du
+   repo), opposable à toute page (ARENA.md §2). Remplace l'ancien système
+   "néon indigo/violet sur fond noir" des rounds précédents : deux mondes
+   (Arène = pierre chaude + torche ; Archives = papier ivoire pour le
+   Livre), trois voix typographiques (Affiche/Chronique/Terminal), une
+   palette de 8 couleurs de dynastie comme SEULE source de couleur saturée.
 
-   Portée : .landing (page d'accueil) ET .site-shell (App.tsx::AppShell —
-   login/apprentissage/admin, round theming du template) partagent les
-   mêmes tokens de fond/texte, pour que l'identité s'applique à tout le
-   site, pas seulement à la racine.
-
-   Polices : Space Grotesk (titres, via branding.local.css qui redéfinit
-   --font-family-display — c'est le point d'extension prévu pour ça, pas
-   ce fichier) et JetBrains Mono (données chiffrées — nouveau token,
-   --font-family-mono n'existe pas dans theme.css, donc pas de collision
-   à éviter ici). Les deux sont chargées ici, un seul appel réseau. */
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+   Portée : .landing (page d'accueil), .site-shell (App.tsx::AppShell —
+   login/apprentissage/admin) ET .world-archives (Learn/TutorialDetail/
+   LessonView) partagent ce fichier — chargé globalement (voir commentaire
+   d'admin-theme.css : bundle SPA non code-splitté par route). */
+@import url("https://fonts.googleapis.com/css2?family=Anton&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap");
 
 :root {
-  --bg: #06060b;
-  --surface: #0e0e17;
-  --surface-2: #161624;
-  --text: #f1eff5;
-  --text-muted: #9a96ab;
-  --border: rgba(255, 255, 255, 0.09);
-  --nav-bg: rgba(6, 6, 11, 0.86);
-  --font-family-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  /* ==== MONDE ARÈNE (sombre, pierre chaude) — CHARTE-GRAPHIQUE.md §2 ==== */
+  --arena-bg: #17130F;
+  --arena-bg-raised: #201A14;
+  --arena-bg-sunken: #100D0A;
+  --arena-line: #3A2F24;
+  --arena-text: #E8DFD2;
+  --arena-text-dim: #9C8F7C;
+  --arena-text-faint: #645A4C;
+  --torch: #C9A050;
+  --torch-dim: #8A6E38;
 
-  /* --color-primary (théme.css) est l'accent néon principal — jamais
-     redéfini ici (voir admin-theme.css : les tokens de marque restent
-     dans theme.css/branding.local.css, l'identité ne doit pas diverger
-     entre pages). --neon-ink en dérive pour un usage en COULEUR DE TEXTE
-     sur fond sombre (contraste), --neon-glow pour les halos décoratifs. */
-  --neon-ink: color-mix(in srgb, var(--color-primary) 55%, white);
-  --neon-glow: color-mix(in srgb, var(--color-primary) 45%, transparent);
-  /* Accent secondaire, purement décoratif (halos, liserés) — jamais sur
-     un bouton ou un CTA, pour ne pas diluer l'accent principal. */
-  --accent-2: #22d3ee;
+  /* ==== MONDE ARCHIVES (papier) ==== */
+  --paper-bg: #F2EBDD;
+  --paper-bg-raised: #FAF6EC;
+  --paper-line: #D8CDB8;
+  --paper-text: #26201A;
+  --paper-text-dim: #6E6252;
+  --ink-stamp: #7A2E2A;
+
+  /* ==== FONCTIONNEL PnL (jamais décoratif, jamais pour les dynasties) === */
+  --pnl-up: #6FA97C;
+  --pnl-down: #C25B4E;
+
+  /* ==== ÉTATS D'AGENT ==== */
+  --state-dead: #55504A;
+
+  /* ==== PALETTE DES 8 DYNASTIES (§2) ==== */
+  --dyn-ember: #FF7A45;
+  --dyn-glacier: #5FD4FF;
+  --dyn-venom: #A6E22E;
+  --dyn-orchid: #D48CFF;
+  --dyn-gold: #FFD24A;
+  --dyn-rose: #FF5C8A;
+  --dyn-cyanide: #29E6A7;
+  --dyn-cobalt: #6C8CFF;
+
+  /* ==== TYPOGRAPHIE (§3) — Affiche/Chronique/Terminal ==== */
+  --font-family-chronique: "Spectral", Georgia, serif;
+  --font-family-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+  /* --font-family-display (Affiche) est défini dans branding.local.css. */
+
+  /* ==== MOUVEMENT (§5) ==== */
+  --ease-arena: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-micro: 140ms;
+  --dur-move: 280ms;
+  --dur-rite: 1600ms;
 }
 
-/* Base partagée par .landing ET .site-shell (App.tsx::AppShell). L'arène
-   est engagée sombre en permanence (Chap 27 : "arène nocturne") — pas de
-   bascule @media (prefers-color-scheme), à la différence du gabarit
-   Studio d'origine : une identité de marque affirmée ne doit pas
-   redevenir un site blanc générique selon les préférences OS du
-   visiteur. */
-.landing, .site-shell { color: var(--text); background: var(--bg); line-height: 1.5; }
+/* Base partagée — l'Arène est engagée sombre en permanence (pas de bascule
+   prefers-color-scheme : §11, "les deux mondes sont un choix éditorial,
+   pas un thème utilisateur"). */
+.landing, .site-shell {
+  color: var(--arena-text);
+  background: var(--arena-bg);
+  font-family: var(--font-family-chronique);
+  line-height: 1.6;
+  position: relative;
+}
 .site-shell { min-height: 100vh; }
 
-.landing h1, .landing h2, .landing h3, .site-shell h1, .site-shell h2 {
-  font-family: var(--font-family-display);
+/* Grain très léger (§4 : "un grain très léger, ~3% d'opacité, tuile CSS,
+   pas d'image lourde") sur le fond Arène uniquement — jamais sur le papier
+   des Archives (§4 : "le papier est propre"). Pur CSS, pas d'asset. */
+.landing::before, .site-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.035;
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--arena-text) 1px, transparent 0);
+  background-size: 3px 3px;
 }
-.landing h2 { font-size: 1.75rem; font-weight: 700; line-height: 1.3; margin: 0 0 1rem; }
-.landing h3 { font-size: 1.15rem; font-weight: 700; }
+.landing > *, .site-shell > * { position: relative; z-index: 1; }
+
+.landing h1, .landing h2, .landing h3,
+.site-shell h1, .site-shell h2, .site-shell h3 {
+  font-family: var(--font-family-display);
+  line-height: 1.05;
+}
+.landing h2 {
+  font-size: 1.75rem; font-weight: 400; margin: 0 0 1rem;
+  text-transform: uppercase; letter-spacing: 0.01em;
+}
+.landing h3 { font-size: 1.125rem; font-weight: 400; text-transform: uppercase; }
 .landing p { margin: 0 0 1rem; }
 .landing p:last-child { margin-bottom: 0; }
 .landing section { padding: 3.5rem 1.5rem; max-width: 1040px; margin: 0 auto; position: relative; }
 
-.landing .btn {
-  background: var(--color-primary);
-  color: var(--color-primary-foreground);
+/* ==== Accessibilité transversale (§7, §11) ==== */
+.skip-link {
+  position: absolute; top: -3rem; left: 1rem; z-index: 100;
+  background: var(--torch); color: #17130F;
+  padding: 0.6rem 1rem; border-radius: 2px;
+  font-family: var(--font-family-mono); font-size: 0.85rem;
+  text-decoration: none; transition: top var(--dur-micro) ease;
+}
+.skip-link:focus { top: 1rem; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0; padding: 0; margin: -1px;
+}
+.landing :focus-visible, .site-shell :focus-visible {
+  outline: 2px solid var(--torch); outline-offset: 2px;
+}
+
+/* ==== Boutons (§6) ==== */
+.landing .btn, .site-shell .btn {
+  background: var(--torch);
+  color: #17130F;
   font: inherit;
+  font-family: var(--font-family-mono);
+  font-size: 0.9rem;
   cursor: pointer;
   text-decoration: none;
   display: inline-block;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 2px;
   padding: 0.75rem 1.25rem;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: filter var(--dur-micro) var(--ease-arena);
 }
-.landing .btn:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px var(--neon-glow), 0 8px 24px var(--neon-glow); }
-.landing .btn--ghost {
+.landing .btn:hover, .site-shell .btn:hover { filter: brightness(1.08); }
+.landing .btn--ghost, .site-shell .btn--ghost {
   background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border);
+  color: var(--arena-text);
+  border: 1px solid var(--arena-line);
 }
-.landing .btn--ghost:hover { border-color: var(--neon-glow); box-shadow: none; }
+.landing .btn--ghost:hover, .site-shell .btn--ghost:hover { border-color: var(--torch); }
 
-/* Formulaires bruts (EmailCapture, et par extension tout .site-shell :
-   Login.tsx n'a que des classes Tailwind utilitaires, sans thème propre
-   — round theming du châssis unifie la coquille, pas le contenu de
-   chaque page. Ces règles évitent qu'un <input> garde un fond blanc par
-   défaut du navigateur sur une page sombre. */
 .landing input, .landing textarea, .site-shell input, .site-shell textarea {
-  background: var(--surface);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
+  background: var(--arena-bg-sunken);
+  color: var(--arena-text);
+  border: 1px solid var(--arena-line);
+  border-radius: 2px;
   padding: 0.65rem 0.85rem;
   font: inherit;
 }
 .landing input:focus, .landing textarea:focus, .site-shell input:focus, .site-shell textarea:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--neon-glow);
+  border-color: var(--torch);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--torch) 35%, transparent);
 }
-.landing button:not(.btn):not(.admin-nav-link), .site-shell button:not(.btn):not(.admin-nav-link) {
+.landing button:not(.btn):not(.admin-nav-link):not(.nav-hamburger):not(.nav-lang),
+.site-shell button:not(.btn):not(.admin-nav-link):not(.nav-hamburger):not(.nav-lang) {
   font: inherit;
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
+  color: var(--arena-text);
+  background: var(--arena-bg-raised);
+  border: 1px solid var(--arena-line);
+  border-radius: 2px;
   padding: 0.5rem 0.9rem;
   cursor: pointer;
 }
-.site-shell a:not(.btn):not(.site-nav a) { color: var(--neon-ink); }
+.site-shell a:not(.btn):not(.site-nav a):not(.nav-link) { color: var(--torch); }
+.form-error { color: var(--pnl-down); font-size: 0.85rem; margin: 0; }
 
-/* Nav / footer partagés (Navbar.tsx / Footer.tsx) */
-.landing .site-nav, .site-shell .site-nav {
-  position: sticky; top: 0; z-index: 10;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 1rem 1.5rem; background: var(--nav-bg);
-  backdrop-filter: blur(8px); border-bottom: 1px solid var(--border);
+/* ==== Navbar (§7) — cadre constant des deux mondes ==== */
+.site-nav {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 1.5rem;
+  height: 64px; padding: 0 1.5rem;
+  background: color-mix(in srgb, var(--arena-bg) 92%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--arena-line);
+  transition: height var(--dur-move) var(--ease-arena);
 }
-.site-nav .brand {
-  font-weight: 700; color: var(--text); text-decoration: none;
-  font-family: var(--font-family-display); letter-spacing: 0.01em;
-}
-.site-nav .btn { padding: 0.5rem 1rem; font-size: 0.9rem; border: none; font: inherit; }
-.site-nav-links { display: flex; align-items: center; gap: 1.25rem; }
-.site-nav-links a:not(.btn) { color: var(--text); text-decoration: none; font-size: 0.95rem; }
-.site-nav-links a:not(.btn):hover { color: var(--neon-ink); }
+.site-nav.is-shrunk { height: 52px; }
 
+.nav-brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: var(--arena-text); flex-shrink: 0; }
+.nav-monogram { color: var(--arena-text); flex-shrink: 0; }
+.nav-monogram-pulse {
+  stroke-dasharray: 60; stroke-dashoffset: 0;
+  animation: nav-pulse 3.2s var(--ease-arena) infinite;
+}
+@keyframes nav-pulse {
+  0%, 100% { stroke-dashoffset: 0; opacity: 0.9; }
+  50% { stroke-dashoffset: 24; opacity: 0.45; }
+}
+.nav-brand-name {
+  font-family: var(--font-family-display); font-size: 1.05rem;
+  letter-spacing: 0.01em; text-transform: uppercase;
+  white-space: nowrap;
+}
+.site-nav.is-shrunk .nav-brand-name { display: none; }
+
+.nav-links { display: flex; align-items: center; gap: 1.25rem; flex: 1; min-width: 0; }
+.nav-link {
+  font-family: var(--font-family-mono); font-size: 0.82rem;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--arena-text-dim); text-decoration: none;
+  padding-bottom: 0.2rem; border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color var(--dur-micro) ease;
+}
+.nav-link:hover { color: var(--arena-text); }
+.nav-link[aria-current="page"] { color: var(--arena-text); border-bottom-color: var(--torch); }
+.nav-link--book {
+  font-family: var(--font-family-chronique); font-style: italic;
+  text-transform: none; letter-spacing: normal; font-size: 0.95rem;
+  margin-left: 0.5rem; padding-left: 1.25rem; border-left: 1px solid var(--arena-line);
+}
+.nav-link--book[aria-current="page"] { border-bottom-color: var(--ink-stamp); }
+
+.nav-vitals { display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
+.nav-vital {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-family: var(--font-family-mono); font-size: 0.8rem; color: var(--arena-text-dim);
+}
+.nav-alive-dot {
+  width: 0.45rem; height: 0.45rem; border-radius: 999px;
+  background: var(--state-dead); display: inline-block;
+}
+
+.nav-utils { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+.nav-lang {
+  font-family: var(--font-family-mono); font-size: 0.78rem;
+  background: transparent; border: 1px solid var(--arena-line);
+  color: var(--arena-text-dim); border-radius: 2px; padding: 0.35rem 0.6rem;
+  cursor: pointer;
+}
+.nav-lang:hover { color: var(--arena-text); border-color: var(--torch); }
+.nav-utils .btn { padding: 0.5rem 1rem; font-size: 0.82rem; }
+
+.nav-hamburger {
+  display: none; flex-direction: column; justify-content: center; gap: 5px;
+  width: 44px; height: 44px; background: transparent; border: none; cursor: pointer;
+  flex-shrink: 0;
+}
+.nav-hamburger span { display: block; width: 20px; height: 2px; background: var(--arena-text); margin: 0 auto; }
+
+.nav-drawer {
+  position: fixed; inset: 64px 0 0 0; z-index: 19;
+  background: var(--arena-bg); padding: 2rem 1.5rem;
+  display: flex; flex-direction: column; gap: 1.5rem;
+  overflow-y: auto;
+}
+.nav-drawer-link {
+  font-family: var(--font-family-display); font-size: 2rem;
+  text-transform: uppercase; color: var(--arena-text); text-decoration: none;
+}
+.nav-drawer-link--book { font-family: var(--font-family-chronique); font-style: italic; text-transform: none; }
+.nav-drawer-utils { margin-top: 1rem; }
+
+@media (max-width: 768px) {
+  .nav-links, .nav-vitals, .nav-utils .nav-lang { display: none; }
+  .nav-hamburger { display: flex; }
+  .nav-utils .btn { display: none; }
+}
+
+/* ==== Footer (§9) ==== */
 .site-footer {
-  padding: 2rem 1.5rem; text-align: center; max-width: none;
-  border-top: 1px solid var(--border); color: var(--text-muted);
-  font-size: 0.875rem; background: var(--surface);
+  padding: 3rem 1.5rem 2rem; max-width: none;
+  border-top: 1px solid var(--arena-line); color: var(--arena-text-dim);
+  font-size: 0.875rem; background: var(--arena-bg-sunken);
 }
-.site-footer p { margin: 0 0 0.5rem; }
-.site-footer p:last-child { margin-bottom: 0; }
-/* Bandeau disclaimer permanent (Livre, chapitre 25, N-C25-07 : "bandeau
-   permanent sur toute la plateforme") — placé dans le Footer partagé
-   plutôt que dans un composant sticky séparé : présent sur CHAQUE page
-   dès que le Footer l'est (round theming), sans repousser le contenu. */
-.site-footer .disclaimer {
-  max-width: 640px; margin: 0 auto 0.75rem; opacity: 0.85; font-size: 0.8rem;
+.footer-columns {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 2rem; max-width: 900px; margin: 0 auto 2.5rem;
 }
+.footer-col { display: flex; flex-direction: column; gap: 0.6rem; }
+.footer-col-title {
+  font-family: var(--font-family-mono); font-size: 0.72rem; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--arena-text-faint); margin: 0 0 0.3rem;
+}
+.footer-col a { color: var(--arena-text-dim); text-decoration: none; font-size: 0.88rem; }
+.footer-col a:hover { color: var(--torch); }
+.site-footer .disclaimer { max-width: 640px; margin: 0 auto 0.75rem; opacity: 0.85; font-size: 0.8rem; text-align: center; }
+.footer-mono { text-align: center; color: var(--arena-text-faint); margin: 0; }
 
-/* Sections de l'arène (Landing.tsx) — hero + 4 espaces réservés */
-.arena-hero { text-align: center; padding: 6rem 1.5rem 4rem; position: relative; overflow: hidden; }
-.arena-hero::before {
-  content: ""; position: absolute; inset: -20% -10% auto -10%; height: 60%;
-  background: radial-gradient(circle at 50% 0%, var(--neon-glow), transparent 70%);
-  pointer-events: none;
-}
+/* ==== Hero (§9) ==== */
+.arena-hero { text-align: center; padding: 5rem 1.5rem 3rem; }
 .arena-hero .eyebrow {
-  font-family: var(--font-family-mono); font-size: 0.8rem; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--neon-ink); margin: 0 0 1rem;
+  font-family: var(--font-family-mono); font-size: 0.75rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--arena-text-faint); margin: 0 0 1rem;
 }
 .arena-hero h1 {
-  font-family: var(--font-family-display); font-size: clamp(2.25rem, 5vw, 3.5rem);
-  font-weight: 700; line-height: 1.1; margin: 0 0 1.25rem; letter-spacing: -0.01em;
+  font-family: var(--font-family-display); font-size: clamp(2.25rem, 5vw, 4.5rem);
+  font-weight: 400; line-height: 1.05; margin: 0 0 1.25rem; letter-spacing: 0.005em;
+  text-transform: uppercase;
 }
-.arena-hero .subtitle { max-width: 640px; margin: 0 auto 2rem; color: var(--text-muted); font-size: 1.05rem; }
+.arena-hero .subtitle { max-width: 640px; margin: 0 auto 2rem; color: var(--arena-text-dim); font-size: 1.125rem; }
 .arena-hero .actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
 
+/* Signature "ligne de vie" (§1) — état pré-saison honnête : un tracé plat
+   et gris (--state-dead), jamais une courbe animée fabriquée. */
+.hero-lifeline { max-width: 420px; margin: 2rem auto 0.5rem; }
+.hero-lifeline svg { width: 100%; height: 24px; display: block; }
+.hero-lifeline line { stroke: var(--state-dead); stroke-width: 1.5; }
+.hero-lifeline-caption {
+  font-family: var(--font-family-mono); font-size: 0.75rem; color: var(--arena-text-faint);
+  text-align: center; margin: 0;
+}
+
+/* ==== Ticker (données comme décor, §1 — jamais un prix inventé) ==== */
+.ticker {
+  border-top: 1px solid var(--arena-line); border-bottom: 1px solid var(--arena-line);
+  background: var(--arena-bg-sunken); overflow: hidden; white-space: nowrap;
+}
+.ticker-track {
+  display: inline-flex; gap: 2.5rem; padding: 0.6rem 0;
+  animation: ticker-scroll 28s linear infinite;
+  font-family: var(--font-family-mono); font-size: 0.8rem; color: var(--arena-text-dim);
+  letter-spacing: 0.03em;
+}
+.ticker-track span { color: var(--torch); }
+@keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ==== Sections génériques de l'arène ==== */
 .arena-section { padding: 3.5rem 1.5rem; max-width: 1040px; margin: 0 auto; }
 .arena-section-header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
-.arena-section-header .subtitle { color: var(--text-muted); font-size: 0.9rem; }
+.arena-section-header .subtitle { color: var(--arena-text-dim); font-size: 0.9rem; font-family: var(--font-family-chronique); }
+.arena-section-empty { color: var(--arena-text-faint); font-size: 0.85rem; margin: 1rem 0 0; text-align: center; }
 
-.arena-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 0.85rem;
-  padding: 1.5rem;
-}
+.arena-card { background: var(--arena-bg-raised); border: 1px solid var(--arena-line); border-radius: 2px; padding: 1.5rem; }
 .arena-placeholder {
-  border: 1px dashed var(--border); border-radius: 0.85rem; padding: 2.5rem 1.5rem;
-  text-align: center; color: var(--text-muted); background: color-mix(in srgb, var(--surface) 60%, transparent);
+  border: 1px dashed var(--arena-line); border-radius: 2px; padding: 2.5rem 1.5rem;
+  text-align: center; color: var(--arena-text-dim); background: var(--arena-bg-sunken);
+}
+.arena-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+
+/* Squelettes — des formes, pas du faux contenu (R-93). */
+.skeleton-bar {
+  height: 0.7rem; border-radius: 2px;
+  background: linear-gradient(90deg, var(--arena-bg-sunken), color-mix(in srgb, var(--arena-bg-sunken) 60%, var(--arena-line)), var(--arena-bg-sunken));
+  background-size: 200% 100%; animation: skeleton-pulse 2.4s ease-in-out infinite;
+}
+@keyframes skeleton-pulse { 0%, 100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
+
+/* Killa — cartes façon post éditorial (Chap 22.2 : 3 types fermés) */
+.killa-card {
+  display: flex; gap: 1rem; align-items: flex-start;
+  background: var(--arena-bg-raised); border: 1px solid var(--arena-line); border-radius: 2px;
+  padding: 1.25rem;
+}
+.killa-card .avatar { width: 2.5rem; height: 2.5rem; border-radius: 50%; flex-shrink: 0; background: var(--arena-bg-sunken); border: 1px solid var(--arena-line); }
+.killa-card .body { flex: 1; display: grid; gap: 0.6rem; }
+.killa-card .type-pill {
+  display: inline-block; width: fit-content; font-family: var(--font-family-mono);
+  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 0.15rem 0.5rem; border-radius: 2px;
+  background: color-mix(in srgb, var(--torch) 16%, transparent); color: var(--torch);
 }
 
-.arena-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+/* Chat — bulles alternées, avatars neutres (aucune identité inventée) */
+.chat-row { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.9rem; }
+.chat-row:last-child { margin-bottom: 0; }
+.chat-row .avatar { width: 2rem; height: 2rem; border-radius: 50%; flex-shrink: 0; background: var(--arena-bg-sunken); border: 1px solid var(--arena-line); }
+.chat-row .lines { flex: 1; display: grid; gap: 0.4rem; }
+.chat-row.is-alt { flex-direction: row-reverse; }
+.chat-row.is-alt .lines { justify-items: end; }
 
-/* Lignes de catalogue/sommaire (Learn.tsx, TutorialDetail.tsx — le livre
-   et ses leçons) : remplace `rounded border p-3` brut, dont la bordure
-   par défaut de Tailwind est quasi invisible sur fond sombre. */
-.site-shell .list-row {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 0.6rem;
-  padding: 0.75rem 1rem;
+/* Dynasties — blasons génératifs, une teinte --dyn-* par carte */
+.dynasty-card {
+  background: var(--arena-bg-raised); border: 1px solid var(--arena-line); border-radius: 2px;
+  padding: 1.25rem; text-align: center;
 }
-.site-shell .list-row a { color: var(--text); text-decoration: none; }
-.site-shell .list-row a:hover { color: var(--neon-ink); }
-.site-shell .badge {
-  background: color-mix(in srgb, var(--color-primary) 22%, transparent);
-  color: var(--neon-ink); border-radius: 0.35rem;
+.dynasty-card .dynasty-blason { margin: 0 auto 0.85rem; display: block; }
+.dynasty-card .label { font-size: 0.7rem; color: var(--arena-text-faint); text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* Saison — encart Archives encapsulé dans l'Arène ("document affiché au
+   mur du Colisée", §9) : seule touche de papier hors du monde Archives. */
+.season-document {
+  background: var(--paper-bg); color: var(--paper-text);
+  border: 1px solid var(--paper-line); border-radius: 2px;
+  padding: 1.75rem; font-family: var(--font-family-chronique);
 }
+.season-document-eyebrow {
+  color: var(--ink-stamp); font-size: 0.72rem; letter-spacing: 0.08em;
+  text-transform: uppercase; margin: 0 0 0.6rem;
+}
+.season-document p:last-child { margin-bottom: 0; color: var(--paper-text-dim); }
 
 .arena-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 .arena-table th {
   text-align: left; font-family: var(--font-family-mono); font-size: 0.75rem;
-  text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);
-  padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border);
+  text-transform: uppercase; letter-spacing: 0.04em; color: var(--arena-text-faint);
+  padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--arena-line);
 }
-.arena-table td { padding: 0.75rem; border-bottom: 1px solid var(--border); font-family: var(--font-family-mono); }
-.arena-table td[colspan] { font-family: inherit; text-align: center; color: var(--text-muted); }
+.arena-table td {
+  padding: 0.75rem; border-bottom: 1px solid var(--arena-line);
+  font-family: var(--font-family-mono); font-variant-numeric: tabular-nums;
+}
+.arena-table tr:last-child td { border-bottom: none; }
+.arena-table td[colspan] { font-family: var(--font-family-chronique); text-align: center; color: var(--arena-text-dim); }
+
+/* Lignes de catalogue/sommaire (Learn.tsx, TutorialDetail.tsx) */
+.site-shell .list-row, .world-archives .list-row {
+  background: var(--arena-bg-raised); border: 1px solid var(--arena-line); border-radius: 2px;
+  padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.5rem;
+}
+.world-archives .list-row { background: var(--paper-bg-raised); border-color: var(--paper-line); }
+.site-shell .list-row a { color: var(--arena-text); text-decoration: none; font-weight: 500; }
+.world-archives .list-row a { color: var(--paper-text); }
+.site-shell .list-row a:hover, .world-archives .list-row a:hover { color: var(--torch); }
+.site-shell .badge, .world-archives .badge {
+  font-family: var(--font-family-mono); font-size: 0.68rem; text-transform: uppercase;
+  padding: 0.15rem 0.5rem; border-radius: 2px;
+  background: color-mix(in srgb, var(--torch) 18%, transparent); color: var(--torch);
+}
+
+/* En-tête de marque sur les écrans utilitaires (Login.tsx, AcceptInvite.tsx) */
+.auth-header { text-align: center; margin-bottom: 2rem; }
+.auth-header .eyebrow {
+  font-family: var(--font-family-mono); font-size: 0.75rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--arena-text-faint); margin: 0 0 0.5rem;
+}
+.auth-header h1 { font-size: 1.75rem; text-transform: uppercase; }
+.auth-header p { color: var(--arena-text-dim); font-size: 0.9rem; max-width: 28rem; margin: 0.5rem auto 0; font-family: var(--font-family-chronique); }
 
 .mono { font-family: var(--font-family-mono); }
 
-/* Apparition douce au scroll — CSS pur (scroll-driven animations), AUCUN
-   JS : @supports dégrade proprement (contenu simplement visible) sur les
-   navigateurs qui ne le gèrent pas encore. */
-@supports (animation-timeline: view()) {
-  .landing .arena-section {
-    animation: landing-fade-in-up linear both;
-    animation-timeline: view();
-    animation-range: entry 0% cover 25%;
+/* ==== Apparition à l'arrivée sur la page (borné dans le temps, jamais lié
+   au scroll — cf. historique du bug scroll-driven fade-in) ==== */
+.landing .arena-section, .landing .arena-hero {
+  animation: landing-fade-in-up var(--dur-move) ease both;
+}
+.landing .arena-section:nth-of-type(1) { animation-delay: 0.05s; }
+.landing .arena-section:nth-of-type(2) { animation-delay: 0.12s; }
+.landing .arena-section:nth-of-type(3) { animation-delay: 0.19s; }
+.landing .arena-section:nth-of-type(4) { animation-delay: 0.26s; }
+.landing .arena-section:nth-of-type(5) { animation-delay: 0.33s; }
+@keyframes landing-fade-in-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==== Rituels (§8) — primitives prêtes à être déclenchées par de vrais
+   événements agent.death/agent.birth (couche C1+) ; pas de démonstration
+   avec un agent fictif ici (fabriquerait une fausse mort). ==== */
+.rite-death { transition: filter var(--dur-rite) var(--ease-arena); filter: grayscale(1); }
+.rite-birth-line {
+  stroke-dasharray: 240; stroke-dashoffset: 240;
+  animation: rite-birth-draw var(--dur-rite) var(--ease-arena) forwards;
+}
+@keyframes rite-birth-draw { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .landing .arena-section, .landing .arena-hero, .ticker-track, .skeleton-bar,
+  .nav-monogram-pulse, .rite-death, .rite-birth-line {
+    animation: none !important;
+    transition: none !important;
   }
-  @keyframes landing-fade-in-up {
-    from { opacity: 0; transform: translateY(14px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+}
+
+/* ==================================================================
+   MONDE ARCHIVES (§9) — le Livre et son outline. Fond papier ivoire,
+   Chronique, lecture longue. .world-archives casse le padding du <main
+   className="p-6"> parent (App.tsx, châssis) par une marge négative —
+   même patron que .admin-shell dans admin-theme.css.
+   ================================================================== */
+.world-archives {
+  background: var(--paper-bg);
+  color: var(--paper-text);
+  font-family: var(--font-family-chronique);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  margin: -1.5rem;
+  min-height: calc(100vh - 4.5rem);
+  padding: 2.5rem 1.5rem 4rem;
+}
+.world-archives h1, .world-archives h2, .world-archives h3 {
+  font-family: var(--font-family-display);
+  color: var(--paper-text);
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.world-archives .archives-title { font-size: 2rem; margin: 0.75rem 0 1.5rem; }
+.world-archives a { color: var(--ink-stamp); }
+.world-archives .archives-back {
+  display: inline-block; font-family: var(--font-family-mono); font-size: 0.8rem;
+  text-transform: uppercase; letter-spacing: 0.04em; color: var(--paper-text-dim);
+  text-decoration: none;
+}
+.world-archives .archives-back:hover { color: var(--ink-stamp); }
+.world-archives .archives-error { color: var(--pnl-down); }
+.world-archives .archives-empty { color: var(--paper-text-dim); font-size: 0.9rem; }
+.world-archives .archives-list, .world-archives .archives-toc-list {
+  list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; gap: 0.6rem; max-width: 68ch;
+}
+.world-archives .archives-toc-item { display: flex; align-items: center; gap: 0.75rem; }
+.world-archives .archives-toc-num { color: var(--paper-text-dim); font-size: 0.75rem; width: 2.5rem; flex-shrink: 0; }
+
+.world-archives .archives-layout {
+  display: grid; grid-template-columns: minmax(0, 68ch) 220px;
+  gap: 3rem; max-width: 980px; margin: 0 auto; align-items: start;
+}
+.world-archives .archives-article { min-width: 0; }
+.world-archives .archives-prose { max-width: 68ch; }
+.world-archives .archives-prose p { margin: 0 0 1.1rem; }
+.world-archives .archives-prose h2 { font-size: 1.5rem; margin: 2rem 0 1rem; }
+.world-archives .archives-prose h3 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; }
+.world-archives .archives-prose ul, .world-archives .archives-prose ol { padding-left: 1.5rem; margin: 0 0 1.1rem; }
+.world-archives .archives-prose table { border-collapse: collapse; margin: 0 0 1.5rem; font-family: var(--font-family-mono); font-size: 0.9rem; }
+.world-archives .archives-prose th, .world-archives .archives-prose td {
+  border: 1px solid var(--paper-line); padding: 0.5rem 0.75rem; text-align: left;
+}
+.world-archives .archives-prose code {
+  background: #EAE2D0; color: var(--paper-text); font-family: var(--font-family-mono);
+  padding: 0.1rem 0.35rem; border-radius: 2px; font-size: 0.88em;
+}
+.world-archives .archives-prose pre {
+  background: #EAE2D0; border: 1px solid var(--paper-line); border-radius: 2px;
+  padding: 1rem; overflow-x: auto; font-family: var(--font-family-mono); font-size: 0.85rem;
+  line-height: 1.4;
+}
+.world-archives .archives-prose pre code { background: none; padding: 0; }
+.world-archives .archives-prose blockquote {
+  border-left: 2px solid var(--ink-stamp); margin: 0 0 1.1rem; padding-left: 1rem;
+  color: var(--paper-text-dim); font-style: italic;
+}
+
+/* Marqueurs du Livre (Chap 0.1) → système visuel (§9) */
+.world-archives .marker {
+  font-family: var(--font-family-mono); font-size: 0.82em; font-style: normal;
+  padding: 0.05rem 0.4rem; border-radius: 2px; white-space: nowrap;
+}
+.world-archives .marker--norme { background: var(--ink-stamp); color: #F2EBDD; text-transform: uppercase; letter-spacing: 0.03em; }
+.world-archives .marker--param { border: 1px solid var(--paper-text-dim); color: var(--paper-text-dim); }
+.world-archives .marker--param::before { content: "⚙ "; }
+.world-archives .marker--lore { font-style: italic; border-bottom: 1px dotted var(--paper-text-dim); color: var(--paper-text-dim); background: none; }
+.world-archives .marker--ouvert { border: 1px dashed var(--paper-text-dim); color: var(--paper-text-dim); background: none; }
+
+.world-archives .archives-toc {
+  position: sticky; top: 5.5rem; align-self: start;
+  display: flex; flex-direction: column; gap: 0.5rem;
+  border-left: 1px solid var(--paper-line); padding-left: 1rem;
+  max-height: calc(100vh - 8rem); overflow-y: auto;
+}
+.world-archives .archives-toc-title {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--paper-text-dim); margin: 0 0 0.25rem;
+}
+.world-archives .archives-toc-link {
+  font-size: 0.85rem; color: var(--paper-text-dim); text-decoration: none;
+}
+.world-archives .archives-toc-link.level-3 { padding-left: 0.75rem; font-size: 0.8rem; }
+.world-archives .archives-toc-link:hover { color: var(--ink-stamp); }
+
+@media (max-width: 860px) {
+  .world-archives .archives-layout { grid-template-columns: 1fr; }
+  .world-archives .archives-toc { display: none; }
+}
+
+@media (max-width: 480px) {
+  .arena-hero h1 { font-size: clamp(1.75rem, 8vw, 2.5rem); }
+  .footer-columns { grid-template-columns: 1fr; }
 }

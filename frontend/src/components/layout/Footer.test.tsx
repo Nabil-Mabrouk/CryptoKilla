@@ -30,7 +30,9 @@ describe("Footer", () => {
 
     const year = new Date().getFullYear();
     await waitFor(() =>
-      expect(screen.getByText(`© ${year} pain-scraper`)).toBeInTheDocument(),
+      expect(screen.getByTestId("footer-copyright").textContent).toContain(
+        `© ${year} pain-scraper`,
+      ),
     );
   });
 
