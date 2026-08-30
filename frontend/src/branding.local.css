@@ -20,3 +20,13 @@
      --color-primary: #16a34a;
    }
 */
+
+/* CryptoKilla (Livre, chapitre 27) : --color-primary reste l'indigo/violet
+   par défaut du Studio — déjà assez saturé pour servir d'accent néon sur
+   fond sombre (landing.css). Seule la police d'affichage change, pour une
+   identité plus technique/arène que l'Inter par défaut. Police chargée
+   dans landing.css (une seule requête réseau pour titres + données). */
+:root {
+  --font-family-display: "Space Grotesk", var(--font-family-base);
+}
+

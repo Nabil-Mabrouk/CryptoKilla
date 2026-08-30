@@ -1,80 +1,64 @@
-import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import manifest from "../landing-manifest.json";
-import type { LandingManifest } from "../components/blocks/types";
-import Hero from "../components/blocks/Hero";
-import Features from "../components/blocks/Features";
-import Testimonial from "../components/blocks/Testimonial";
-import Faq from "../components/blocks/Faq";
-import Pricing from "../components/blocks/Pricing";
 import EmailCapture from "../components/blocks/EmailCapture";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
+import KillaFeed from "../components/arena/KillaFeed";
+import ChatPreview from "../components/arena/ChatPreview";
+import Leaderboard from "../components/arena/Leaderboard";
+import DynastyShowcase from "../components/arena/DynastyShowcase";
 import "../landing.css";
 
-const data = manifest as LandingManifest;
-
-// URLs explicites par skin (pas de formule générique) : Fraunces a un axe
-// optical-size (opsz) propre, une formule fragiliserait le rendu pour
-// économiser une ligne — même choix que l'ancien landing.html.jinja (Chap 24).
-const FONT_HREF_BY_SKIN: Record<string, string> = {
-  editorial:
-    "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap",
-  bold: "https://fonts.googleapis.com/css2?family=Archivo:wght@400;700;900&family=Inter:wght@400;500;600&display=swap",
-};
-const DEFAULT_FONT_HREF =
-  "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap";
-
-// Exporté pour test direct (skin inconnu -> repli clean/Inter, sans avoir à
-// mocker le manifest par skin).
-export function fontHrefForSkin(skin: string): string {
-  return FONT_HREF_BY_SKIN[skin] ?? DEFAULT_FONT_HREF;
-}
+// Seuls `project`/`domain` du manifest Studio sont encore lus ici (repris
+// tels quels par EmailCapture pour le POST /leads) — `skin`/`blocks`/
+// `hero_image` ne le sont plus : CryptoKilla a une identité unique fixe
+// (landing.css), pas un thème configurable par blocs génériques. Les
+// polices ne sont plus injectées en JS par skin (ancien mécanisme
+// FONT_HREF_BY_SKIN) : landing.css les charge par @import, une seule fois,
+// pour toutes les pages du site (round theming), pas seulement la landing.
+const data = manifest as { project: string; domain: string };
 
 export default function Landing() {
-  useEffect(() => {
-    const href = fontHrefForSkin(data.skin);
-    const preconnect1 = document.createElement("link");
-    preconnect1.rel = "preconnect";
-    preconnect1.href = "https://fonts.googleapis.com";
-    const preconnect2 = document.createElement("link");
-    preconnect2.rel = "preconnect";
-    preconnect2.href = "https://fonts.gstatic.com";
-    preconnect2.crossOrigin = "anonymous";
-    const stylesheet = document.createElement("link");
-    stylesheet.rel = "stylesheet";
-    stylesheet.href = href;
-
-    document.head.append(preconnect1, preconnect2, stylesheet);
-    return () => {
-      preconnect1.remove();
-      preconnect2.remove();
-      stylesheet.remove();
-    };
-  }, []);
+  const { t } = useTranslation();
 
   return (
-    <div className="landing" data-skin={data.skin}>
+    <div className="landing" data-testid="landing-page">
       <Navbar />
-      {data.blocks.map((block, i) => {
-        switch (block.type) {
-          case "hero":
-            return <Hero key={i} block={block} heroImage={data.hero_image} />;
-          case "features":
-            return <Features key={i} block={block} />;
-          case "testimonial":
-            return <Testimonial key={i} block={block} />;
-          case "faq":
-            return <Faq key={i} block={block} />;
-          case "pricing":
-            return <Pricing key={i} block={block} />;
-          case "email_capture":
-            return (
-              <EmailCapture key={i} block={block} project={data.project} domain={data.domain} />
-            );
-          default:
-            return null;
-        }
-      })}
+
+      <section className="arena-hero">
+        <p className="eyebrow">{t("landing.hero.eyebrow")}</p>
+        <h1>{t("landing.hero.title")}</h1>
+        <p className="subtitle">{t("landing.hero.subtitle")}</p>
+        <div className="actions">
+          <a className="btn" href="#email-capture">
+            {t("landing.hero.cta_waitlist")}
+          </a>
+          <a className="btn btn--ghost" href="/learn">
+            {t("landing.hero.cta_book")}
+          </a>
+        </div>
+      </section>
+
+      {/* Espaces réservés (Livre, chapitres 8/22/24.1/27) : aucune donnée
+          réelle avant la couche C3 (chapitre 34) — structure déjà posée
+          pour un branchement futur sans retoucher la mise en page. */}
+      <KillaFeed />
+      <ChatPreview />
+      <Leaderboard />
+      <DynastyShowcase />
+
+      <EmailCapture
+        block={{
+          type: "email_capture",
+          headline: t("landing.waitlist.headline"),
+          subhead: t("landing.waitlist.subhead"),
+          cta: t("landing.waitlist.cta"),
+          field_placeholder: t("landing.waitlist.placeholder"),
+        }}
+        project={data.project}
+        domain={data.domain}
+      />
+
       <Footer />
     </div>
   );
