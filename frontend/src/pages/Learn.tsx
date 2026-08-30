@@ -28,14 +28,12 @@ export default function Learn() {
       <h1 className="text-2xl font-bold">{t("learn.title")}</h1>
       <ul className="mt-4 grid gap-2">
         {tutorials.map((tut) => (
-          <li key={tut.id} className="rounded border p-3">
+          <li key={tut.id} className="list-row">
             <Link to={`/learn/${tut.slug}`} className="font-medium">
               {tut.title}
             </Link>
             {tut.access_role !== "anonymous" && (
-              <span className="ml-2 rounded bg-black/10 px-2 py-0.5 text-xs">
-                {t("learn.premium")}
-              </span>
+              <span className="badge ml-2 px-2 py-0.5 text-xs">{t("learn.premium")}</span>
             )}
           </li>
         ))}

@@ -170,6 +170,20 @@
 
 .arena-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
 
+/* Lignes de catalogue/sommaire (Learn.tsx, TutorialDetail.tsx — le livre
+   et ses leçons) : remplace `rounded border p-3` brut, dont la bordure
+   par défaut de Tailwind est quasi invisible sur fond sombre. */
+.site-shell .list-row {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 0.6rem;
+  padding: 0.75rem 1rem;
+}
+.site-shell .list-row a { color: var(--text); text-decoration: none; }
+.site-shell .list-row a:hover { color: var(--neon-ink); }
+.site-shell .badge {
+  background: color-mix(in srgb, var(--color-primary) 22%, transparent);
+  color: var(--neon-ink); border-radius: 0.35rem;
+}
+
 .arena-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 .arena-table th {
   text-align: left; font-family: var(--font-family-mono); font-size: 0.75rem;

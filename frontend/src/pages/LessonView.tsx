@@ -74,7 +74,11 @@ export default function LessonView() {
     <article>
       {backLink}
       <h1 className="mt-2 text-2xl font-bold">{lesson!.title}</h1>
-      <div className="prose mt-4 max-w-none">
+      {/* prose-invert (Tailwind Typography) : la palette par défaut de
+          .prose est pensée pour un fond clair — sur le fond quasi noir de
+          l'identité CryptoKilla, le texte resterait à très faible
+          contraste sans ce modificateur. */}
+      <div className="prose prose-invert mt-4 max-w-none">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson!.content}</ReactMarkdown>
       </div>
     </article>

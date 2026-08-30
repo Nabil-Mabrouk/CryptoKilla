@@ -48,7 +48,7 @@ export default function TutorialDetail() {
         {[...tutorial.lessons]
           .sort((a, b) => a.order - b.order)
           .map((lesson) => (
-            <li key={lesson.id} className="rounded border p-3">
+            <li key={lesson.id} className="list-row">
               <Link to={`/learn/${tutorial.slug}/lessons/${lesson.id}`} className="font-medium">
                 {lesson.title}
               </Link>
