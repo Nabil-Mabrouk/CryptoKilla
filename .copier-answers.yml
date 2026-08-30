@@ -27,6 +27,7 @@ modules:
     monetization_shop: true
     security_middleware: true
     tutorials: true
+    worker: true
 postgres_password: 69290e5d8ac8c7505a1456fbbff741a77d532f6eb463d912243cddea41862b702228d62ea7386d96bae0432af354be34d80c5a648af2d3b204765bac84a6ccb2
 project:
     domain: cryptokilla.com

@@ -125,3 +125,23 @@ produit/plan.
 **Ne touchez pas** : `app/modules/monetization/*` — logique de
 fulfillment/webhook châssis ; un besoin catalogue est un besoin de donnée,
 pas de code.
+
+## Worker (`MODULE_WORKER`)
+
+**Fournit** : un service `worker` dédié dans `docker-compose.yml`, une boucle
+planifiée avec arrêt propre sur SIGTERM (`app/modules/worker/runner.py`), et
+un audit minimal des exécutions (`WorkerRun` — début/fin/statut/erreur,
+consultable via `GET /api/worker/status`, réservé admin). Pas d'event store
+ni de checkpoint génériques : c'est un pur journal opérationnel.
+
+**Étendre en sécurité** : implémentez votre cycle dans
+`app/domain/worker_cycle.py` (`run_cycle(db, stop_requested)`), le seul
+point d'extension prévu. **Important** : `docker compose up -d --build`
+(déclenché à CHAQUE push, pas seulement ceux touchant le worker) redémarre
+ce service à chaque déploiement — votre cycle DOIT être idempotent/résumable
+et vérifier `stop_requested` entre ses propres étapes si un cycle peut durer
+plusieurs dizaines de secondes, plutôt que de compter uniquement sur les
+90 secondes de `stop_grace_period` avant SIGKILL.
+
+**Ne touchez pas** : `app/modules/worker/*` (mécanique châssis : recovery au
+boot, boucle, audit) — seul `app/domain/worker_cycle.py` vous appartient.
