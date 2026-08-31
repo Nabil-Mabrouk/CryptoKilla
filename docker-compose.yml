@@ -85,6 +85,12 @@ services:
     networks:
       - proxy-net
       - internal-net
+      # Lecture directe de services partagés : fleet (onglet Leads, toute la
+      # flotte), module_leads (vue projet-locale du landing collector) et
+      # module_analytics (service geoip partagé, Chap 13) en ont besoin — un
+      # projet ordinaire sans aucun des trois n'a aucune raison de joindre ce
+      # réseau interne à la flotte.
+      - shared-services-net
     depends_on:
       db:
         condition: service_healthy
@@ -179,6 +185,13 @@ networks:
   internal-net:
     driver: bridge
     internal: true
+  # Réseau interne de shared_services (Chap 18) — jamais créé ici, seulement
+  # rejoint. Nom réel dépendant du nom de projet Compose de shared_services
+  # sur le serveur : vérifier avec `docker network ls` au premier déploiement
+  # et corriger SHARED_SERVICES_NETWORK dans .env si besoin.
+  shared-services-net:
+    external: true
+    name: ${SHARED_SERVICES_NETWORK:-shared_services_shared-services-net}
 
 volumes:
   db_data:
