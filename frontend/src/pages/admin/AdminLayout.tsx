@@ -28,6 +28,10 @@ const TABS: Tab[] = [
   { key: "activity", labelKey: "admin.tabs.activity", path: "/admin/activity", moduleFlag: "fleet" },
   { key: "leads", labelKey: "admin.tabs.leads", path: "/admin/leads", moduleFlag: "fleet" },
   { key: "maintenance", labelKey: "admin.tabs.maintenance", path: "/admin/maintenance", moduleFlag: "fleet" },
+  // Arène (couche C1) : création de saison/dynasties + observabilité
+  // (journal d'événements, logs d'erreurs, runs du worker) — même patron
+  // que users/waitlist, toujours présent avec le shell admin.
+  { key: "arena", labelKey: "admin.tabs.arena", path: "/admin/arena", moduleFlag: "admin" },
   { key: "users", labelKey: "admin.tabs.users", path: "/admin/users", moduleFlag: "admin" },
   { key: "waitlist", labelKey: "admin.tabs.waitlist", path: "/admin/waitlist", moduleFlag: "admin" },
   { key: "analytics", labelKey: "admin.tabs.analytics", path: "/admin/analytics", moduleFlag: "analytics" },

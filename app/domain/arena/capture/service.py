@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.arena.capture.kraken_client import fetch_ohlc, fetch_orderbook, parse_ohlc, parse_orderbook
+from app.domain.arena.log import log
 from app.domain.arena.models import MarketCandle, OrderbookSnapshot
 
 # Au-delà de cet âge, une bougie est jugée périmée (N-C14-04). Généreux
@@ -38,7 +39,9 @@ async def capture_tick(db: AsyncSession, client: httpx.AsyncClient, pairs: list[
             # suivant réessaiera. La fraîcheur des données déjà en base
             # (is_stale) porte la conséquence, pas une exception qui
             # arrêterait la boucle du worker pour une seule paire en panne.
+            # Loggé en base (visible admin) EN PLUS du print (logs conteneur).
             print(f"capture_tick: échec paire={pair}: {exc!r}")
+            await log(db, "error", "capture", f"Échec de capture pour {pair}", {"error": repr(exc)})
     await db.commit()
 
 

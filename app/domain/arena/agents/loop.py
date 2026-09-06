@@ -27,6 +27,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.domain.arena.agents import tools
 from app.domain.arena.agents.llm_client import LLMClient, ToolCall
+from app.domain.arena.log import log
 from app.domain.arena.models import Agent, EventRecord, TokenLedger
 
 INBOX_POLL_INTERVAL = 5  # secondes — coût nul (une requête SQL), pas de LLM
@@ -149,8 +150,18 @@ async def run_agent_loop(
                 await asyncio.sleep(INBOX_POLL_INTERVAL)
                 continue
 
-            await _run_one_cycle(db, agent, season_id, llm_client)
-            await db.commit()
+            try:
+                await _run_one_cycle(db, agent, season_id, llm_client)
+                await db.commit()
+            except Exception as exc:  # noqa: BLE001 — un cycle cassé ne doit jamais tuer la tâche de l'agent
+                await db.rollback()
+                print(f"agents.loop: échec cycle agent={agent_id}: {exc!r}")
+                try:
+                    async with session_factory() as log_db:
+                        await log(log_db, "error", "agent_loop", f"Échec du cycle de l'agent {agent_id}", {"error": repr(exc)})
+                        await log_db.commit()
+                except Exception:  # noqa: BLE001 — le logging lui-même ne doit jamais faire tomber la boucle
+                    pass
             last_cycle_at = datetime.now(timezone.utc)
 
 

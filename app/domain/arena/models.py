@@ -341,3 +341,25 @@ class OrderbookSnapshot(Base):
     captured_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     __table_args__ = (Index("ix_orderbook_pair_time", "pair", "captured_at"),)
+
+
+class ArenaLog(Base):
+    """Journal opérationnel (pas un type Annexe B — diagnostics internes :
+    erreurs de capture, exceptions rattrapées dans le worker/la boucle
+    agent). Distinct de `arena_events` (source de vérité du jeu, chapitre
+    15) : ceci sert l'observabilité admin, jamais lu par les agents ni le
+    public. Append-only comme le reste."""
+
+    __tablename__ = "arena_logs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    level = Column(String, nullable=False)
+    component = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    details = Column(JSON, nullable=True)
+
+    __table_args__ = (
+        CheckConstraint("level IN ('info','warning','error')", name="ck_arena_logs_level"),
+        Index("ix_arena_logs_created_at", "created_at"),
+    )

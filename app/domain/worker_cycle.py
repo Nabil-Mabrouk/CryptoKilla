@@ -36,6 +36,7 @@ from app.domain.arena.agents.llm_client import build_llm_client
 from app.domain.arena.agents.loop import run_agent_loop
 from app.domain.arena.capture.service import capture_tick
 from app.domain.arena.engine.surveillance import surveillance_tick
+from app.domain.arena.log import log
 from app.domain.arena.models import Agent, Season
 from app.domain.arena.orchestrator.hourly import run_hourly_sequence
 from app.domain.arena.params import get_param
@@ -110,13 +111,30 @@ async def _wait_for_season(stop_requested: asyncio.Event) -> tuple[str | None, s
 async def _tick_loop(
     http_client: httpx.AsyncClient, season_id: str, pairs: list[str], stop_requested: asyncio.Event
 ) -> None:
+    """Chaque étape est isolée dans son propre `try/except` : une exception
+    dans l'une ne doit jamais arrêter les suivantes NI tuer cette tâche
+    pour de bon — sans ça, `asyncio.gather(..., return_exceptions=True)`
+    (`run_cycle`) avalerait l'exception et cette boucle s'arrêterait
+    silencieusement jusqu'au redémarrage du worker (plus aucune capture,
+    plus aucune surveillance des stops, jamais signalé nulle part)."""
+    steps = (
+        ("capture", lambda db: capture_tick(db, http_client, pairs)),
+        ("surveillance", lambda db: surveillance_tick(db, season_id, pairs)),
+        ("hourly", lambda db: run_hourly_sequence(db, season_id, pairs)),
+    )
     while not stop_requested.is_set():
-        async with SessionLocal() as db:
-            await capture_tick(db, http_client, pairs)
-        async with SessionLocal() as db:
-            await surveillance_tick(db, season_id, pairs)
-        async with SessionLocal() as db:
-            await run_hourly_sequence(db, season_id, pairs)
+        for component, step in steps:
+            try:
+                async with SessionLocal() as db:
+                    await step(db)
+            except Exception as exc:  # noqa: BLE001 — une étape cassée ne doit jamais arrêter le tick
+                print(f"worker_cycle: échec étape={component}: {exc!r}")
+                try:
+                    async with SessionLocal() as log_db:
+                        await log(log_db, "error", component, f"Échec du tick {component}", {"error": repr(exc)})
+                        await log_db.commit()
+                except Exception:  # noqa: BLE001 — le logging lui-même ne doit jamais faire tomber le tick
+                    pass
 
         try:
             await asyncio.wait_for(stop_requested.wait(), timeout=TICK_INTERVAL_SECONDS)

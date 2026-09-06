@@ -13,6 +13,7 @@ import Analytics from "./pages/admin/Analytics";
 import Security from "./pages/admin/Security";
 import Users from "./pages/admin/Users";
 import Waitlist from "./pages/admin/Waitlist";
+import Arena from "./pages/admin/Arena";
 import TutorialDetail from "./pages/TutorialDetail";
 import LessonView from "./pages/LessonView";
 import AdminRoute from "./pages/admin/AdminRoute";
@@ -57,6 +58,7 @@ function AppShell() {
               <Route path="leads" element={<Leads />} />
               <Route path="project-leads" element={<ProjectLeads />} />
               <Route path="maintenance" element={<Maintenance />} />
+              <Route path="arena" element={<Arena />} />
               <Route path="users" element={<Users />} />
               <Route path="waitlist" element={<Waitlist />} />
               <Route path="analytics" element={<Analytics />} />
