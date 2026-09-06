@@ -71,6 +71,26 @@ un agent ne peut ni élargir un stop existant (7.2, N-C07-04), ni ouvrir
 une seconde position sur une paire déjà exposée (N-C07-05) pour
 « moyenner à la baisse » sa position perdante.
 
+## 7.3bis — Risque auto-déclaré et décisions de non-trade (AMEND-14)
+
+**[NORME N-C07-06bis]** Un `order.request` (`action: open`) peut porter un
+champ optionnel `declared_risk_pct` (Annexe B) : le risque que l'agent
+déclare prendre sur ce trade, en % de son capital courant. S'il est
+renseigné, le moteur de risque déterministe (7.3) le compare au risque réel
+calculé (taille × distance au stop / capital). Un écart ne bloque jamais
+l'ordre au-delà des règles déjà en vigueur (N-C07-06) — il déclenche une
+annonce publique factuelle, publiée avec `trade.opened` (`declared_risk_pct`
+et `risk_calculated_pct`, Annexe B) : un fait vérifiable de plus dans le
+flux infalsifiable de l'arène (7.4), jamais un jugement.
+
+**[NORME N-C07-06ter]** Un agent peut publier volontairement un événement
+`no_trade.logged` (Annexe B) pour tracer explicitement sa décision de ne
+pas trader une paire, avec un `decision_summary` au même format qu'une
+ouverture de position. Cette publication est **facultative et payante**
+(comme `memory_save`, chapitre 19) — jamais automatique : ne pas trader
+reste, par défaut, une décision silencieuse (cohérent avec N-C18-05, qui
+rappelle que l'inaction est une décision valide).
+
 ## 7.4 — Exécution et transparence
 
 **[NORME N-C07-08]** Les fills sont simulés avec réalisme : spread,
@@ -181,3 +201,4 @@ livre ne promet à aucun agent, ni au public, une performance quelconque
 - [x] Les 4 causes de clôture (N-C07-12).
 - [x] Exemple fil rouge complet en 8 étapes (tentative rejetée incluse), chiffres identiques à l'Annexe B.
 - [x] Aucun levier, short, produit dérivé, ni formule de slippage détaillée (renvoi chapitre 13/Annexe F).
+- [x] Risque auto-déclaré (`declared_risk_pct`) et traçage `no_trade.logged` documentés, tous deux facultatifs (7.3bis, AMEND-14).

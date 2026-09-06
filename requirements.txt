@@ -17,4 +17,11 @@ pyjwt==2.13.0
 email-validator==2.3.0
 psutil==7.2.2
 pytest==9.1.1
+pytest-asyncio==1.1.0
 httpx==0.28.1
+# Arène (couche C1) : anthropic pour la boucle agent (tool-use natif,
+# correspond aux contrats d'outils de l'Annexe C) ; numpy pour les
+# indicateurs de marché (SMA/EMA/RSI, chapitre 14). Décision volontaire
+# documentée dans le plan C1, pas un accident de `pip install`.
+anthropic==0.37.1
+numpy==2.2.1

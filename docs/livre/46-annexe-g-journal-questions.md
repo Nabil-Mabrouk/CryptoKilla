@@ -16,7 +16,7 @@ Format : `D-<numéro>` — énoncé — chapitre(s) propriétaire(s) — alterna
 | D | Énoncé | Chapitre(s) | Alternative écartée |
 |---|---|---|---|
 | D-001 | Enveloppe commune à 6 champs (dont `recipient`, AMEND-13) pour tout objet circulant ; `E-SCHEMA` sur non-conformité | Annexe B | Objets hétérogènes sans enveloppe commune |
-| D-002 | 12 types d'objets exhaustifs, aucun message privé inter-agents | Annexe B | Canal de messagerie privée entre agents (exclu, R-50) |
+| D-002 | 13 types d'objets exhaustifs (AMEND-14), aucun message privé inter-agents | Annexe B | Canal de messagerie privée entre agents (exclu, R-50) |
 | D-003 | 13 outils exhaustifs, `balance_after` sur chaque réponse comme seul signal de coût | Annexe C | Grille tarifaire publiée (exclue, R-23) |
 | D-004 | 4 rôles de l'orchestrateur (garde-fou, comptable, arbitre, horloger), moteur de risque déterministe sans LLM | Chapitre 12.1 | Validation d'ordre assistée par LLM (exclue) |
 | D-005 | Séquence H+0 en 7 étapes strictement ordonnées | Chapitre 12.2 | Étapes parallélisables (exclu, cohérence exigée) |

@@ -3,8 +3,12 @@
 > Registre : 100 % normatif. Dépendances : R-05, R-20, R-23, R-40, R-41,
 > R-46, R-53, R-61, chapitre 20 (voir
 > [`cryptokilla-regles-experience.md`](../cryptokilla-regles-experience.md)).
-> Amendement intégré : **AMEND-C1** (Lot 2) — la phase funéraire dispose de
-> deux outils (`memory_search` + `write_testament`), déjà incorporé
+> Amendements intégrés : **AMEND-C1** (Lot 2) — la phase funéraire dispose de
+> deux outils (`memory_search` + `write_testament`) — et **AMEND-14** (revue
+> d'extensibilité pré-développement, voir
+> [`cryptokilla-amendements-template.md`](../cryptokilla-amendements-template.md))
+> — clause « pour la v1 » sur le compte d'outils, `data_type` de
+> `get_market_data`, contrat de code de `run_backtest` — déjà incorporés
 > ci-dessous.
 >
 > Scénario fil rouge partagé avec l'[Annexe B](41-annexe-b-schemas-messages.md) :
@@ -17,6 +21,12 @@ Spécifier l'unique surface d'action des agents : **treize outils** (les
 douze de R-05/chapitre 20 plus `write_testament`, conditionnel), ni plus ni
 moins. Pour chacun : signature, entrées/sorties, erreurs, imputation du
 coût en tokens, effets de bord.
+
+**[NORME N-ANXC-00]** Ce compte de treize est verrouillé **pour la v1**
+(AMEND-14) — symétrique au verrou de source de données du chapitre 14
+(N-C14-01). Toute extension future (nouvel outil) est un changement de
+norme explicite, documenté aux amendements, jamais un ajout silencieux au
+runtime.
 
 ## C.0 — Principes transverses
 
@@ -46,8 +56,8 @@ appel (précisée au chapitre 16.2).
 **Famille** : percevoir.
 
 ```
-get_market_data(pair, timeframe ∈ {1m,5m,15m,1h,4h,1d,1w,1M}, from, to, indicators[]?)
-  → { ohlcv[], indicators{} }
+get_market_data(pair, timeframe ∈ {1m,5m,15m,1h,4h,1d,1w,1M}, from, to, indicators[]?, data_type? ∈ {ohlcv, orderbook, indicators})
+  → { ohlcv[]?, orderbook?, indicators{}? }
 ```
 
 - Fenêtre maximale par `timeframe` : `[PARAM: fenetres_max_data]`.
@@ -57,6 +67,13 @@ get_market_data(pair, timeframe ∈ {1m,5m,15m,1h,4h,1d,1w,1M}, from, to, indica
   **jamais** par le LLM (chapitre 14.2).
 - Si la donnée est en retard (panne de flux, chapitre 14.1), chaque point
   porte `stale: true` et un champ `age_seconds`.
+- `data_type` (AMEND-14, défaut `ohlcv`) sélectionne la nature de la
+  réponse : `ohlcv` (comportement historique, bougies + indicateurs),
+  `orderbook` (dernier instantané de carnet capturé, chapitre 14.1),
+  `indicators` (indicateurs seuls, sans les bougies — réduit le volume
+  renvoyé et donc le coût). C'est le point d'extension désigné pour toute
+  donnée Kraken supplémentaire qu'une version future exposerait, **sans**
+  ajouter de nouvel outil (chapitre 14.2bis, N-ANXC-00).
 
 Exemple d'appel et de réponse :
 
@@ -105,6 +122,15 @@ run_backtest(code, pair, from, to) → { nb_trades, win_rate, pnl_net, max_drawd
   représentatif du même moteur de fill qu'en trading réel (chapitre 13.3).
 - La courbe d'équité est produite comme artefact image, joignable en pièce
   jointe de `chat.message`.
+- **Contrat du paramètre `code` (AMEND-14)** : le code doit définir une
+  fonction `on_bar(bar, broker, memoire)`, appelée une fois par bougie
+  historique de la fenêtre `[from, to]`. `broker` expose exactement les six
+  méthodes du moteur d'exécution (chapitre 13 : `place`, `modify`, `close`,
+  `cancel`, `get_positions`, `get_fills`) — le même contrat qu'en trading
+  réel (N-C13-12 : « même moteur »), ce qui rend le code d'un backtest
+  directement réutilisable, sans traduction, pour raisonner en trading réel.
+  Bibliothèques disponibles : identiques à `execute_code` (`pandas`,
+  `numpy`, `ta`), aucun accès réseau.
 
 ```json
 {
@@ -418,6 +444,7 @@ position par paire et par agent au maximum.
 ## Checklist de conformité
 
 - [x] Treize outils (douze + `write_testament`) documentés avec exemple d'appel et de réponse.
+- [x] Compte d'outils verrouillé « pour la v1 » (N-ANXC-00, AMEND-14) ; `data_type` de `get_market_data` et contrat de code de `run_backtest` documentés comme points d'extension.
 - [x] `balance_after` présent dans chaque exemple de réponse.
 - [x] Matrice outils × erreurs complète.
 - [x] AMEND-C1 intégré (deux outils en phase funéraire).

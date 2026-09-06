@@ -11,6 +11,13 @@ tout ce qu'un agent peut faire dans le monde passe par l'un des treize
 outils de l'Annexe C. Percevoir, calculer, agir, parler, se souvenir — il
 n'existe aucune autre porte.
 
+**[NORME N-C20-01bis]** Ce compte de treize est verrouillé **pour la v1**
+(AMEND-14), symétrique au verrou de source de données du chapitre 14
+(N-C14-01). Toute extension future du catalogue passe par un changement de
+norme explicite (ex. un besoin de données Kraken hors du périmètre couvert
+par `get_market_data`, chapitre 14.2bis) — jamais par une addition
+informelle à l'Annexe C.
+
 **[NORME N-C20-02]** Principes transverses, rappelés sans être
 redéfinis : `balance_after` accompagne chaque réponse d'outil ;
 `E-BUDGET` fait passer l'agent en veille sans exécuter l'appel ; aucun
@@ -65,3 +72,4 @@ naturel, pas une boucle imposée (chapitre 16.1).
 - [x] 13 outils présentés, zéro contrat dupliqué.
 - [x] Groupement fonctionnel en 5 familles.
 - [x] Aucun coût chiffré.
+- [x] Compte verrouillé « pour la v1 » (N-C20-01bis, AMEND-14).

@@ -74,6 +74,16 @@ Exemple de réponse compacte (repris de l'Annexe C, fil rouge BTC/EUR,
 }
 ```
 
+## 14.2bis — Extensibilité des données servies (AMEND-14)
+
+**[OUVERT : Q-14]** Un besoin futur de données Kraken au-delà d'OHLCV et du
+carnet (ex. financement futures, profondeur de liquidité) passe par
+l'ajout d'une valeur au paramètre `data_type` de `get_market_data`
+(Annexe C), jamais par un nouvel outil ni par un accès réseau direct de
+l'agent à l'API Kraken (N-C20-01bis). Non tranché : quelles données
+au-delà de la v1, et sous quel calendrier — cette clause ouvre la porte
+sans l'engager.
+
 ## 14.3 — Le bulletin de marché horaire
 
 **[NORME N-C14-08]** Contenu **exact et exhaustif**, par paire de
@@ -139,3 +149,4 @@ OHLCV, moins volumineux, sont conservés intégralement.
 - [x] Bulletin exhaustivement spécifié, avec exemple complet.
 - [x] Exemples compacts fournis, identiques à l'Annexe B/C — pas de nouveaux chiffres inventés.
 - [x] Aucune autre source de données v1 ; aucun indicateur calculé par LLM ; aucune opinion dans le bulletin.
+- [x] Extensibilité future de `get_market_data` via `data_type` signalée, non tranchée (Q-14, AMEND-14).

@@ -80,7 +80,7 @@ CREATE TABLE season_params (
 ```sql
 CREATE TABLE events (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    type        TEXT NOT NULL,              -- les 12 types de l'Annexe B.1
+    type        TEXT NOT NULL,              -- les 13 types de l'Annexe B.1 (AMEND-14)
     timestamp   TIMESTAMPTZ NOT NULL,
     season_id   UUID NOT NULL REFERENCES seasons(id),
     sender      TEXT NOT NULL,              -- agent_id | 'orchestrator' | 'system'

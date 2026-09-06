@@ -185,6 +185,57 @@
   `events` (event-sourcing, chapitre 11.2) doit pouvoir répondre
   directement.
 
+### AMEND-14 — Extensibilité du foundation layer : stratégie, risque déclaré, NO_TRADE, contrat de backtest
+- **Impacte** : chapitre 7 (7.3bis nouveau, N-C07-06bis/ter) ; chapitre 14
+  (14.2bis nouveau, Q-14) ; chapitre 19 (N-C19-01bis, convention de tag
+  `strategy:`) ; chapitre 20 (N-C20-01bis) ; Annexe B (`order.request` gagne
+  `declared_risk_pct`/`strategy_ref`, `trade.opened` gagne
+  `declared_risk_pct`/`risk_calculated_pct`, nouveau 13ᵉ type
+  `no_trade.logged`) ; Annexe C (N-ANXC-00, `get_market_data` gagne
+  `data_type`, contrat de code de `run_backtest`).
+- **Origine** : revue explicitement demandée avant tout développement de la
+  couche foundation — vérifier que le livre permette, sans réécriture,
+  l'extension future vers le ML, vers des données Kraken plus larges, et
+  vers une routine de trading que l'agent définit, persiste, amende et
+  évalue. Pas un trou de brief : une clarification demandée en amont de
+  l'implémentation (chapitre 0.2).
+- **Décision** :
+  1. Les verrous « treize outils » (chapitre 20/Annexe C, N-ANXC-00/
+     N-C20-01bis) et « trois types de mémoire » (chapitre 19, N-C19-01bis)
+     gagnent chacun une clause **« pour la v1 »**, symétrique à celle déjà
+     en place pour la source de données (chapitre 14, N-C14-01) : toute
+     extension future est un changement de norme explicite, jamais un ajout
+     silencieux au runtime.
+  2. `get_market_data` (Annexe C) gagne un paramètre optionnel `data_type`
+     (`ohlcv` par défaut, `orderbook`, `indicators`) — point d'extension
+     désigné pour toute donnée Kraken future (chapitre 14.2bis, Q-14 non
+     tranchée), sans nouvel outil.
+  3. Convention non normative : une entrée `procedural` formalisant une
+     routine de trading complète porte le tag `strategy:<nom_libre>` ;
+     `order.request` gagne un champ optionnel `strategy_ref` pour relier un
+     trade à cette routine — sans créer de quatrième type de mémoire.
+  4. `run_backtest` (Annexe C) précise le contrat du paramètre `code` :
+     fonction `on_bar(bar, broker, memoire)`, `broker` exposant les six
+     méthodes du moteur d'exécution (chapitre 13, N-C13-12 — même moteur
+     qu'en trading réel), rendant le code d'un backtest directement
+     réutilisable pour raisonner en trading réel.
+  5. `order.request` gagne un champ optionnel `declared_risk_pct` ; le
+     moteur de risque compare au risque réel calculé et publie l'écart avec
+     `trade.opened` (nouveaux champs `declared_risk_pct`/
+     `risk_calculated_pct`) — jamais un blocage supplémentaire, un fait
+     rendu public comme le reste du flux de trading (chapitre 7.3bis,
+     N-C07-06bis).
+  6. Nouveau type d'objet public **`no_trade.logged`** (Annexe B, 13ᵉ
+     type, N-C07-06ter) : publication volontaire et payante de la décision
+     explicite de ne pas trader, sur le modèle de `memory_save` — jamais
+     automatique.
+- **Motif** : rendre l'extension vers le ML (via de futures valeurs de
+  `data_type`/de type mémoire), vers plus de données Kraken, et vers une
+  routine de trading traçable et évaluable possible sans réécriture du
+  foundation layer — tout en gardant le compte d'outils et de types de
+  mémoire fermé et auditable tant qu'aucune extension n'est explicitement
+  décidée.
+
 ### Notes sans amendement
 - **Analytics** : pas d'événements personnalisés dans le châssis — les
   métriques d'arène (chapitre 33) restent en domaine ; les pages vues du
@@ -213,6 +264,10 @@
      d'indisponibilité du moteur de stops à borner — lien R-43) ?
 - **Q-20 (NOUVELLE, à trancher en C3)** — Killa/spectateurs/notation sur
   MODULE_AGENTIC ou en domaine (voir AMEND-11).
+- **Q-14 (NOUVELLE, non bloquante)** — Quelles données Kraken au-delà de
+  l'OHLCV/carnet v1 seraient exposées via `data_type` de `get_market_data`,
+  et à quel horizon (voir AMEND-14, chapitre 14.2bis). Ouverte
+  délibérément : ne bloque aucun développement de la v1.
 - **Q-15** — inchangée (reportée), désormais adossée à AMEND-06.
 - **Q-16** — inchangée ; noter que le châssis (analytics : IP hashée) fournit
   une base saine, la revue RGPD couvrira châssis + domaine.

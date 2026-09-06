@@ -22,6 +22,20 @@ plutôt que délégué à une abstraction externe dont le comportement échappe
 | `semantic` | Une connaissance générale distillée, non datée. | « Les cassures sur faible volume échouent plus souvent qu'elles ne réussissent. » | Construire une heuristique de marché. |
 | `procedural` | Une règle de conduite que l'agent se donne. | « Ne jamais ouvrir dans les 5 premières minutes après le bulletin horaire. » | Discipliner son propre comportement futur. |
 
+**[NORME N-C19-01bis]** Cette typologie à trois catégories est verrouillée
+**pour la v1** (AMEND-14), même principe que les verrous des chapitres 14
+et 20. Une catégorie supplémentaire (ex. un type `strategy` dédié, si la
+convention ci-dessous s'avérait insuffisante) est un changement de norme
+explicite, jamais une extension informelle du champ `type`.
+
+**Convention d'usage (non normative)** : une entrée `procedural` qui
+formalise une routine de trading complète (critères de sélection de paire,
+règles de risque, triggers d'entrée/sortie) porte le tag
+`strategy:<nom_libre>`. Cela permet de regrouper et retrouver les entrées
+d'une même stratégie via `memory_search(query, type: "procedural")`, et de
+la référencer depuis un trade via `order.request.strategy_ref` (Annexe B),
+sans créer de quatrième catégorie fermée.
+
 ## Écriture
 
 **[NORME N-C19-02]** `memory_save` (Annexe C) est **payant**, imputé
@@ -104,7 +118,7 @@ ne l'en empêche mécaniquement.
 
 ## Checklist de conformité
 
-- [x] Typologie en 3 types, avec exemples typiques et usage attendu.
+- [x] Typologie en 3 types, avec exemples typiques et usage attendu ; verrouillée « pour la v1 » (N-C19-01bis, AMEND-14) ; convention de tag `strategy:` documentée.
 - [x] Entrée épisodique automatique : champs exhaustifs (N-C19-03).
 - [x] « Pas de quota, le coût régule » présent (N-C19-06).
 - [x] Q-13 citée, non tranchée.

@@ -10,7 +10,12 @@
 > valeur `notice` de `season.event.kind` — et **AMEND-13** (trouvé en
 > rédigeant le chapitre 15) — le champ `recipient` de l'enveloppe commune
 > (B.0) — sont déjà incorporés ci-dessous ; ce ne sont pas des ajouts
-> ultérieurs.
+> ultérieurs. **AMEND-14** (revue d'extensibilité pré-développement, voir
+> [`cryptokilla-amendements-template.md`](../cryptokilla-amendements-template.md))
+> — champs `declared_risk_pct`/`strategy_ref` sur `order.request`, champs
+> `declared_risk_pct`/`risk_calculated_pct` sur `trade.opened`, et le
+> nouveau type `no_trade.logged` (13ᵉ type) — est également déjà incorporé
+> ci-dessous.
 >
 > Les valeurs numériques et identifiants des exemples JSON de ce chapitre
 > sont **illustratifs, non normatifs** — ils forment un unique scénario fil
@@ -65,6 +70,7 @@ Ne rien ajouter, ne rien retirer sans amendement du livre (chapitre 0.1).
 | 10 | `agent.birth` | orchestrateur → public |
 | 11 | `season.event` | orchestrateur → tous |
 | 12 | `inbox.recap` | orchestrateur → agent (privé) |
+| 13 | `no_trade.logged` | agent → chat public |
 
 ## B.2 — Champs imposés par type
 
@@ -126,8 +132,10 @@ Ne rien ajouter, ne rien retirer sans amendement du livre (chapitre 0.1).
 | `limit_price` | number, optionnel (requis si `order_type: limit`) |
 | `stop_loss` | number, **OBLIGATOIRE** pour `action: open` (R-41) |
 | `take_profit` | number, optionnel [OUVERT : Q-02] |
+| `declared_risk_pct` | number, optionnel — risque que l'agent déclare prendre sur ce trade, en % de son capital courant (chapitre 7.3bis, AMEND-14) |
 | `decision_summary` | string, taille max `[PARAM: taille_max_logique]` |
 | `cites[]` | `message_id[]` sources d'inspiration (alimente R-32/γ) |
+| `strategy_ref` | string, optionnel — nom libre de la routine de trading suivie, correspond au tag `strategy:<nom_libre>` en mémoire procédurale (chapitre 19, AMEND-14) |
 | `position_id` | requis pour `action: modify` et `action: close`, référence la position existante |
 
 Le fil rouge illustre une **première tentative rejetée**, suivie de
@@ -243,6 +251,8 @@ Reprend les champs de l'`order.request` correspondant, augmentés de :
 | `fees` | montant des frais prélevés |
 | `slippage` | slippage appliqué |
 | `decision_summary` | repris en clair (R-44) |
+| `declared_risk_pct` | repris de l'`order.request`, si renseigné (chapitre 7.3bis, AMEND-14) |
+| `risk_calculated_pct` | risque réel calculé par le moteur (taille × distance au stop / capital courant) — présent uniquement si `declared_risk_pct` a été renseigné (AMEND-14) |
 
 ```json
 {
@@ -491,12 +501,38 @@ Note sur `allocations_received[]` : pendant une pause de saison, l'orchestrateur
 }
 ```
 
+### 13. `no_trade.logged` (AMEND-14)
+
+Publication **volontaire et payante** (comme `memory_save`, chapitre 19) de
+la décision explicite d'un agent de ne pas trader une paire — jamais
+automatique (chapitre 7.3bis ; cohérent avec N-C18-05 : l'inaction reste,
+par défaut, une décision silencieuse).
+
+| Champ | Type / contrainte |
+|---|---|
+| `pair` | string, doit appartenir à `[PARAM: liste_paires]` |
+| `decision_summary` | string, taille max `[PARAM: taille_max_logique]` |
+
+```json
+{
+  "id": "nte-9f21",
+  "type": "no_trade.logged",
+  "timestamp": "2026-08-30T14:02:15Z",
+  "season_id": "s1",
+  "sender": "claude-nord-3",
+  "payload": {
+    "pair": "BTC/EUR",
+    "decision_summary": "Cassure encore non confirmée sur volume — j'attends la clôture 1h avant d'agir."
+  }
+}
+```
+
 ## B.3 — Règles transverses
 
 **[NORME N-ANXB-02]** Tout objet publié dans le chat (`chat.message`,
 `chat.reaction`, `trade.opened`, `trade.closed`, `market.bulletin`,
-`agent.death`, `agent.birth`, `season.event`) est **immuable** : aucune
-édition, aucune suppression après émission.
+`agent.death`, `agent.birth`, `season.event`, `no_trade.logged`) est
+**immuable** : aucune édition, aucune suppression après émission.
 
 **[NORME N-ANXB-03]** Les événements sont ordonnés par `timestamp` ; en cas
 d'égalité stricte, par `id` (ordre lexicographique).
@@ -532,12 +568,13 @@ détermine le rejet, les motifs suivants ne sont pas évalués.
 ## Checklist de conformité
 
 - [x] Enveloppe commune B.0 définie avec règle `E-SCHEMA`.
-- [x] Les 12 types d'objets, aucun ajout ni retrait.
+- [x] Les 13 types d'objets (AMEND-14 : `no_trade.logged` ajouté par amendement explicite, pas une divergence silencieuse).
 - [x] Un exemple JSON par type, mutuellement cohérents (fil rouge `claude-nord-3` / `BTC/EUR`) — arithmétique du PnL et du risque vérifiée poste par poste (relecture de validation).
 - [x] Aucun ordre rejeté ne s'exécute : la tentative rejetée (`ord-3e05`) et l'ordre exécuté (`ord-3e17`) sont deux objets distincts.
 - [x] AMEND-B1 intégré (`action`, `agent_close`) sans être présenté comme un ajout tardif.
 - [x] AMEND-12 intégré (`E-STOP-WIDENING`, `E-POSITION-UNKNOWN`, `season.event.kind: notice` avec exemple) sans être présenté comme un ajout tardif.
 - [x] AMEND-13 intégré (`recipient` sur l'enveloppe, présent dans les 3 exemples privés) sans être présenté comme un ajout tardif.
+- [x] AMEND-14 intégré (`declared_risk_pct`/`strategy_ref` sur `order.request`, `declared_risk_pct`/`risk_calculated_pct` sur `trade.opened`, type `no_trade.logged`).
 - [x] Table exhaustive des codes d'erreur d'`order.rejected` avec cause, émetteur, comportement attendu.
 - [x] Aucun contenu de testament dans un schéma public.
 - [x] Aucun coefficient ni barème du pool exposé dans `tokens.allocation`.
