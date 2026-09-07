@@ -45,6 +45,9 @@ export default function Navbar() {
   const [modules, setModules] = useState<Record<string, boolean>>({});
   const [shrunk, setShrunk] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // null tant que non chargé/aucune saison — jamais un chiffre inventé
+  // (R-93). Endpoint public, aucune authentification (GET /api/arena/public/status).
+  const [aliveCount, setAliveCount] = useState<number | null>(null);
 
   useEffect(() => {
     apiFetch("/health")
@@ -58,6 +61,13 @@ export default function Navbar() {
         setModules(data?.modules ?? {});
       })
       .catch(() => setModules({}));
+  }, []);
+
+  useEffect(() => {
+    apiFetch("/api/arena/public/status")
+      .then(async (r) => (r.ok ? ((await r.json()) as { season: unknown; alive_count: number }) : null))
+      .then((data) => setAliveCount(data?.season ? data.alive_count : null))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -107,9 +117,13 @@ export default function Navbar() {
           <span className="nav-vital nav-metronome" title={t("nav.vitals.pre_season")}>
             <span aria-hidden="true">⏱</span> <span className="mono">—:—</span>
           </span>
-          <span className="nav-vital nav-alive" title={t("nav.vitals.pre_season")}>
-            <span className="nav-alive-dot" aria-hidden="true" />
-            <span className="mono">—</span>
+          <span className="nav-vital nav-alive" title={aliveCount === null ? t("nav.vitals.pre_season") : undefined}>
+            <span
+              className="nav-alive-dot"
+              aria-hidden="true"
+              style={aliveCount ? { background: "var(--torch)" } : undefined}
+            />
+            <span className="mono">{aliveCount === null ? "—" : aliveCount}</span>
           </span>
         </div>
 

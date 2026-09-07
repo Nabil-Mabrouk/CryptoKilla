@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import manifest from "../landing-manifest.json";
+import { apiFetch } from "../api";
 import EmailCapture from "../components/blocks/EmailCapture";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
@@ -8,6 +10,7 @@ import ChatPreview from "../components/arena/ChatPreview";
 import Leaderboard from "../components/arena/Leaderboard";
 import DynastyShowcase from "../components/arena/DynastyShowcase";
 import SeasonNotice from "../components/arena/SeasonNotice";
+import type { ArenaPublicStatus } from "../types/arena";
 import "../landing.css";
 
 // Seuls `project`/`domain` du manifest Studio sont encore lus ici (repris
@@ -22,6 +25,17 @@ const TICKER_PAIRS = ["BTC/EUR", "ETH/EUR", "SOL/EUR"];
 
 export default function Landing() {
   const { t } = useTranslation();
+  // Un seul fetch partagé par les 3 sections qui en ont besoin (Leaderboard,
+  // DynastyShowcase, SeasonNotice) plutôt qu'un par composant — même
+  // endpoint public, GET /api/arena/public/status (aucune authentification,
+  // rien de secret n'y transite, voir sa docstring backend).
+  const [arenaStatus, setArenaStatus] = useState<ArenaPublicStatus | null>(null);
+
+  useEffect(() => {
+    apiFetch("/api/arena/public/status").then(async (r) => {
+      if (r.ok) setArenaStatus((await r.json()) as ArenaPublicStatus);
+    });
+  }, []);
 
   return (
     <div className="landing" data-testid="landing-page">
@@ -65,16 +79,19 @@ export default function Landing() {
           réelle avant la couche C3 (chapitre 34) — structure déjà posée
           pour un branchement futur sans retoucher la mise en page. */}
       <ChatPreview />
-      <Leaderboard />
+      <Leaderboard data={arenaStatus} />
       <KillaFeed />
-      <DynastyShowcase />
-      <SeasonNotice />
+      <DynastyShowcase data={arenaStatus} />
+      <SeasonNotice data={arenaStatus} />
 
       <EmailCapture
         block={{
           type: "email_capture",
           headline: t("landing.waitlist.headline"),
-          subhead: t("landing.waitlist.subhead"),
+          // Évite la contradiction avec la section Saison juste au-dessus :
+          // « la saison n'a pas commencé » n'a plus de sens une fois une
+          // saison réellement active (arenaStatus.season).
+          subhead: t(arenaStatus?.season ? "landing.waitlist.subhead_active" : "landing.waitlist.subhead"),
           cta: t("landing.waitlist.cta"),
           field_placeholder: t("landing.waitlist.placeholder"),
         }}

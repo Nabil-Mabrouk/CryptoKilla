@@ -247,6 +247,113 @@ function SeasonsPanel() {
             ))}
         </div>
       )}
+
+      {selectedSeason && <ParamsPanel seasonId={selectedSeason} />}
+    </div>
+  );
+}
+
+interface ParamRow {
+  name: string;
+  value: unknown;
+  visibility: string;
+}
+
+function ParamsPanel({ seasonId }: { seasonId: string }) {
+  const { t } = useTranslation();
+  const [params, setParams] = useState<ParamRow[] | null>(null);
+  const [open, setOpen] = useState(false);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [savedName, setSavedName] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function load() {
+    setError(null);
+    const r = await apiFetch(`/api/arena/admin/seasons/${seasonId}/params`);
+    if (r.ok) {
+      const rows = (await r.json()) as ParamRow[];
+      setParams(rows);
+      setDrafts(Object.fromEntries(rows.map((p) => [p.name, JSON.stringify(p.value)])));
+    } else {
+      setError(t("admin.arena.errorGeneric"));
+    }
+  }
+
+  useEffect(() => {
+    if (open && params === null) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  async function save(name: string) {
+    setError(null);
+    setSavedName(null);
+    let value: unknown;
+    try {
+      value = JSON.parse(drafts[name]);
+    } catch {
+      setError(t("admin.arena.invalidJson"));
+      return;
+    }
+    const r = await apiFetch(`/api/arena/admin/seasons/${seasonId}/params/${encodeURIComponent(name)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ value }),
+    });
+    if (r.ok) {
+      setSavedName(name);
+      await load();
+    } else {
+      setError(t("admin.arena.errorGeneric"));
+    }
+  }
+
+  return (
+    <div className="admin-card p-4">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold">{t("admin.arena.paramsTitle")}</h2>
+        <button className="admin-btn-inline" onClick={() => setOpen((v) => !v)} type="button">
+          {open ? t("admin.arena.hide") : t("admin.arena.show")}
+        </button>
+      </div>
+      {open && (
+        <>
+          <p className="admin-muted mt-2 text-xs">{t("admin.arena.paramsHint")}</p>
+          {error && <p className="admin-error">{error}</p>}
+          {params === null && <p>{t("admin.arena.loading")}</p>}
+          {params !== null && (
+            <table className="mt-3 w-full text-left text-sm">
+              <thead>
+                <tr>
+                  <th className="p-2">{t("admin.arena.columns.paramName")}</th>
+                  <th className="p-2">{t("admin.arena.columns.paramValue")}</th>
+                  <th className="p-2">{t("admin.arena.columns.visibility")}</th>
+                  <th className="p-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {params.map((p) => (
+                  <tr key={p.name}>
+                    <td className="p-2 mono">{p.name}</td>
+                    <td className="p-2">
+                      <input
+                        className="w-full"
+                        value={drafts[p.name] ?? ""}
+                        onChange={(e) => setDrafts((d) => ({ ...d, [p.name]: e.target.value }))}
+                      />
+                    </td>
+                    <td className="p-2">{p.visibility}</td>
+                    <td className="p-2">
+                      <button className="admin-btn-inline" onClick={() => save(p.name)} type="button">
+                        {savedName === p.name ? t("admin.arena.saved") : t("admin.arena.save")}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </>
+      )}
     </div>
   );
 }

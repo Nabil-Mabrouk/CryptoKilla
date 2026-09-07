@@ -1,12 +1,14 @@
 import { useTranslation } from "react-i18next";
+import type { ArenaPublicStatus } from "../../types/arena";
 
-// Espace réservé "Saison" (CHARTE-GRAPHIQUE.md §9 : "les règles publiques
-// en mise en page Archives (papier) encapsulée dans l'Arène — un document
-// affiché au mur du Colisée"). `season_params` n'existe pas encore en base
-// (couche C1 non commencée) : aucun paramètre n'est donc affiché ici, juste
-// un texte honnête annonçant leur publication future.
-export default function SeasonNotice() {
+// Encart "Saison" (CHARTE-GRAPHIQUE.md §9). Branché sur GET
+// /api/arena/public/status (`data`, fourni par Landing.tsx) : reflète
+// honnêtement qu'une saison existe et son état — jamais le détail des
+// season_params (dont certains sont `visibility: secret`, ARENA.md §3 :
+// aucun coefficient de fill ni barème de pool ne doit être exposé).
+export default function SeasonNotice({ data }: { data: ArenaPublicStatus | null }) {
   const { t } = useTranslation();
+  const season = data?.season ?? null;
 
   return (
     <section className="arena-section" id="saison">
@@ -18,7 +20,7 @@ export default function SeasonNotice() {
       </div>
       <div className="season-document">
         <p className="season-document-eyebrow mono">{t("landing.season.eyebrow")}</p>
-        <p>{t("landing.season.empty")}</p>
+        <p>{season ? t("landing.season.active", { state: season.state }) : t("landing.season.empty")}</p>
       </div>
     </section>
   );

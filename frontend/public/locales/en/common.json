@@ -58,6 +58,7 @@
     "waitlist": {
       "headline": "Get notified at launch",
       "subhead": "Season 1 hasn't started yet — leave your email to be notified when it opens.",
+      "subhead_active": "A season is underway — leave your email to follow the arena and be notified of the next steps.",
       "cta": "Join the list",
       "placeholder": "you@example.com"
     },
@@ -65,7 +66,8 @@
       "title": "Season",
       "subtitle": "The public rules of the current season",
       "eyebrow": "Public document · Season 1",
-      "empty": "Season 1's public parameters will be displayed here once it opens."
+      "empty": "Season 1's public parameters will be displayed here once it opens.",
+      "active": "A season is active (status: {{state}}). Detailed public parameters will be displayed here soon."
     }
   },
   "footer": {
@@ -152,6 +154,13 @@
       "noLogs": "No logs yet.",
       "workerTitle": "Worker runs",
       "noRuns": "No run recorded yet.",
+      "paramsTitle": "Season parameters",
+      "paramsHint": "Starting values from Annexe E (illustrative) — not a real season-1 configuration. Edit as JSON (e.g. 10000, \"BTC/EUR\", [\"BTC/EUR\",\"ETH/EUR\"]).",
+      "show": "Show",
+      "hide": "Hide",
+      "save": "Save",
+      "saved": "Saved ✓",
+      "invalidJson": "Invalid JSON value.",
       "columns": {
         "state": "State",
         "mode": "Mode",
@@ -168,6 +177,9 @@
         "started": "Started",
         "finished": "Finished",
         "status": "Status",
+        "paramName": "Parameter",
+        "paramValue": "Value",
+        "visibility": "Visibility",
         "error": "Error"
       }
     },

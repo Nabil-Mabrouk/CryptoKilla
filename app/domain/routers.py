@@ -239,3 +239,72 @@ async def admin_list_logs(
         }
         for r in rows
     ]
+
+
+# ==================================================================
+# Lecture publique — tranche minimale (pas d'authentification) pour que
+# la landing reflète honnêtement une saison réellement créée, sans
+# anticiper la couche C3 (pas de chat, pas de WebSocket, pas de Killa).
+#
+# Périmètre volontairement restreint à ce qu'ARENA.md §3 autorise déjà à
+# publier : classement (chapitre 24.1, "recalculable depuis l'historique
+# public"), dynasties, statut de saison. RIEN de secret n'y transite —
+# jamais les season_params `visibility: secret` (coefficients de fill,
+# plancher/bonus du pool), jamais un testament non publié.
+# ==================================================================
+
+
+@arena_router.get("/public/status")
+async def arena_public_status(db: AsyncSession = Depends(get_db)) -> dict:
+    season = (
+        await db.execute(select(Season).where(Season.state == "active").order_by(Season.created_at.desc()).limit(1))
+    ).scalar_one_or_none()
+    if season is None:
+        return {"season": None, "alive_count": 0, "dynasties": [], "leaderboard": []}
+
+    dynasties = (await db.execute(select(Dynasty).where(Dynasty.season_id == season.id))).scalars().all()
+    dynasty_by_id = {d.id: d for d in dynasties}
+
+    agents = (
+        await db.execute(select(Agent).where(Agent.dynasty_id.in_(dynasty_by_id.keys())))
+        if dynasty_by_id
+        else None
+    )
+    agents = agents.scalars().all() if agents is not None else []
+
+    leaderboard = []
+    alive_count = 0
+    for agent in agents:
+        if agent.status != "mort":
+            alive_count += 1
+        capital_rows = (
+            await db.execute(select(CapitalLedger.amount).where(CapitalLedger.agent_id == agent.id))
+        ).scalars().all()
+        capital = float(sum(capital_rows))
+        pnl_rows = (
+            await db.execute(
+                select(CapitalLedger.amount).where(
+                    CapitalLedger.agent_id == agent.id, CapitalLedger.kind.in_(("pnl_realise", "frais"))
+                )
+            )
+        ).scalars().all()
+        pnl = float(sum(pnl_rows))
+        dynasty = dynasty_by_id[agent.dynasty_id]
+        leaderboard.append(
+            {
+                "dynasty": dynasty.name,
+                "color": dynasty.color,
+                "generation": agent.generation,
+                "status": agent.status,
+                "capital": capital,
+                "pnl": pnl,
+            }
+        )
+    leaderboard.sort(key=lambda row: row["capital"], reverse=True)
+
+    return {
+        "season": {"id": season.id, "state": season.state, "mode": season.mode},
+        "alive_count": alive_count,
+        "dynasties": [{"name": d.name, "model": d.model, "color": d.color} for d in dynasties],
+        "leaderboard": leaderboard,
+    }

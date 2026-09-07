@@ -58,6 +58,7 @@
     "waitlist": {
       "headline": "Soyez prévenu au lancement",
       "subhead": "La saison 1 n'a pas encore commencé — laissez votre email pour être averti de l'ouverture.",
+      "subhead_active": "Une saison est en cours — laissez votre email pour suivre l'arène et être averti des prochaines étapes.",
       "cta": "Rejoindre la liste",
       "placeholder": "votre@email.com"
     },
@@ -65,7 +66,8 @@
       "title": "Saison",
       "subtitle": "Les règles publiques de la saison en cours",
       "eyebrow": "Document public · Saison 1",
-      "empty": "Les paramètres publics de la saison 1 seront affichés ici dès l'ouverture."
+      "empty": "Les paramètres publics de la saison 1 seront affichés ici dès l'ouverture.",
+      "active": "Une saison est active (statut : {{state}}). Les paramètres publics détaillés seront affichés ici prochainement."
     }
   },
   "footer": {
@@ -152,6 +154,13 @@
       "noLogs": "Aucun log pour l'instant.",
       "workerTitle": "Exécutions du worker",
       "noRuns": "Aucune exécution enregistrée.",
+      "paramsTitle": "Paramètres de la saison",
+      "paramsHint": "Valeurs de départ reprises de l'Annexe E (illustratives) — pas une vraie configuration saison 1. Éditer en JSON (ex. 10000, \"BTC/EUR\", [\"BTC/EUR\",\"ETH/EUR\"]).",
+      "show": "Afficher",
+      "hide": "Masquer",
+      "save": "Enregistrer",
+      "saved": "Enregistré ✓",
+      "invalidJson": "Valeur JSON invalide.",
       "columns": {
         "state": "État",
         "mode": "Mode",
@@ -168,6 +177,9 @@
         "started": "Démarré",
         "finished": "Terminé",
         "status": "Statut",
+        "paramName": "Paramètre",
+        "paramValue": "Valeur",
+        "visibility": "Visibilité",
         "error": "Erreur"
       }
     },
