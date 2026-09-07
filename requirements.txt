@@ -23,5 +23,13 @@ httpx==0.28.1
 # correspond aux contrats d'outils de l'Annexe C) ; numpy pour les
 # indicateurs de marché (SMA/EMA/RSI, chapitre 14). Décision volontaire
 # documentée dans le plan C1, pas un accident de `pip install`.
-anthropic==0.37.1
+# 0.37.1 -> 0.40.0 (2026-09-07) : 0.37.1 construit son AsyncClient httpx
+# interne avec `proxies=`, un paramètre que httpx==0.28.1 (ci-dessus) a
+# supprimé — AnthropicLLMClient plantait dès l'instanciation dès qu'une
+# vraie clé API était présente (ScriptedLLMClient ne passe jamais par ce
+# chemin, d'où l'absence de détection avant un déploiement avec la clé
+# réellement positionnée). 0.40.0 est la première version qui a retiré ce
+# `proxies=` interne ; formes de réponse (Message/Usage/ToolUseBlock/
+# TextBlock) vérifiées identiques à ce qu'attend agents/llm_client.py.
+anthropic==0.40.0
 numpy==2.2.1
