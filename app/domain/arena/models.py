@@ -292,18 +292,138 @@ class Fill(Base):
 
 
 class Message(Base):
-    """Chat console minimal (C1 : un seul agent, pas de conversation réelle
-    — sert surtout à ce que `post_message` ait un effet observable et
-    testable ; le vrai chat multi-agents/public est C2+, chapitre 8)."""
+    """Chat public (chapitre 8, chapitre 15) — DDL du Livre : `agent_id`
+    non-null (`messages` ne porte QUE les publications d'agents ; les
+    annonces de l'orchestrateur restent des `events` purs, jamais stockées
+    ici — cohérent avec CHARTE-GRAPHIQUE.md §6 : « les publications de
+    l'orchestrateur... jamais une couleur de dynastie »). Immuable après
+    insertion (Annexe B.3) : aucun UPDATE applicatif sur `text`."""
 
     __tablename__ = "arena_messages"
 
     id = Column(String(36), primary_key=True, default=_uuid)
+    agent_id = Column(String(36), ForeignKey("arena_agents.id"), nullable=False)
     season_id = Column(String(36), ForeignKey("arena_seasons.id"), nullable=False)
-    sender = Column(String, nullable=False)  # agent_id | 'orchestrator'
-    content = Column(Text, nullable=False)
-    cites = Column(JSON, nullable=True)
+    text = Column(Text, nullable=False)
+    attachments = Column(JSON, nullable=False, default=list)
+    mentions = Column(JSON, nullable=False, default=list)
+    cites = Column(JSON, nullable=False, default=list)
+    # N-C12-06/07 : classification à l'appel LLM de l'orchestrateur — NULL
+    # tant que non classifié (asynchrone, pas au moment de la publication).
+    eligibility_class = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint(
+            "eligibility_class IN ('substantiel','contextuel','vide') OR eligibility_class IS NULL",
+            name="ck_message_eligibility",
+        ),
+        Index("ix_arena_messages_season_created", "season_id", "created_at"),
+    )
+
+
+class Reaction(Base):
+    __tablename__ = "arena_reactions"
+
+    id = Column(String(36), primary_key=True, default=_uuid)
+    target_message_id = Column(String(36), ForeignKey("arena_messages.id"), nullable=False)
+    reactor_agent_id = Column(String(36), ForeignKey("arena_agents.id"), nullable=False)
+    reaction = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    __table_args__ = (Index("ix_arena_reactions_pair", "reactor_agent_id", "target_message_id"),)
+
+
+class Citation(Base):
+    """`order_id` référence l'ordre d'OUVERTURE qui a cité le message (seul
+    `order.request` porte `cites[]`, Annexe B.2) — réglée à la clôture du
+    trade citant (N-C06-06). Aucune ligne créée pour une auto-citation
+    (agent_id du message == agent_id de l'ordre) : plus simple qu'un statut
+    toujours à zéro, même résultat économique."""
+
+    __tablename__ = "arena_citations"
+
+    id = Column(String(36), primary_key=True, default=_uuid)
+    message_id = Column(String(36), ForeignKey("arena_messages.id"), nullable=False)
+    order_id = Column(String(36), ForeignKey("arena_orders.id"), nullable=False)
+    status = Column(String, nullable=False, default="en_attente")
+
+    __table_args__ = (
+        CheckConstraint("status IN ('en_attente','creditee','non_creditee')", name="ck_citation_status"),
+    )
+
+
+class Memory(Base):
+    """Mémoire long terme d'un agent (chapitre 19) — appartient à la
+    génération qui l'a écrite, inerte à la mort (N-C19-05), jamais
+    transmise (R-16, seul le testament traverse une génération).
+    `embedding` nullable : Q-13 (local vs API) non tranchée — décision de
+    portée du plan C2, recherche mots-clés uniquement cette passe, colonne
+    posée pour ne pas re-migrer plus tard."""
+
+    __tablename__ = "arena_memories"
+
+    id = Column(String(36), primary_key=True, default=_uuid)
+    agent_id = Column(String(36), ForeignKey("arena_agents.id"), nullable=False)
+    type = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    tags = Column(JSON, nullable=False, default=list)
+    embedding = Column(JSON, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint("type IN ('episodic','semantic','procedural')", name="ck_memory_type"),
+        Index("ix_arena_memories_agent_type", "agent_id", "type"),
+    )
+
+
+class HumanArenaProfile(Base):
+    """Overlay minimal (N-C15-04, AMEND-05) — l'identité/auth humaine vit
+    dans le système utilisateurs du template (`users`, app/core/models.py),
+    jamais dupliquée ici. Schéma posé pour C3 (aucune UI publique cette
+    passe, décision de portée du plan C2)."""
+
+    __tablename__ = "arena_human_profiles"
+
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    email_verified_at = Column(DateTime(timezone=True), nullable=True)
+    anonymized_at = Column(DateTime(timezone=True), nullable=True)
+
+
+class Like(Base):
+    """Un like humain sur un message (chapitre 24.3) — schéma posé pour C3,
+    pris en compte par le calcul du pool (economy.py) dès que des lignes
+    existent, mais aucune UI publique cette passe."""
+
+    __tablename__ = "arena_likes"
+
+    id = Column(String(36), primary_key=True, default=_uuid)
+    human_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    message_id = Column(String(36), ForeignKey("arena_messages.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    __table_args__ = (UniqueConstraint("human_user_id", "message_id", name="uq_like_per_human_message"),)
+
+
+class Testament(Base):
+    """Chapitre 21 — 1:1 avec l'agent (`agent_id UNIQUE`), applique la règle
+    « appelable une seule fois » aussi au niveau base (N-C21-02). Accès en
+    lecture restreint au rôle admin tant que `state != 'publie'` — appliqué
+    au niveau applicatif (routers.py), pas par une politique Postgres
+    dédiée (choix du Livre lui-même, N-C21-03)."""
+
+    __tablename__ = "arena_testaments"
+
+    id = Column(String(36), primary_key=True, default=_uuid)
+    agent_id = Column(String(36), ForeignKey("arena_agents.id"), nullable=False, unique=True)
+    content = Column(Text, nullable=False, default="")
+    state = Column(String, nullable=False, default="en_redaction")
+    sealed_at = Column(DateTime(timezone=True), nullable=True)
+    published_at = Column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        CheckConstraint("state IN ('en_redaction','scelle','publie')", name="ck_testament_state"),
+    )
 
 
 class MarketCandle(Base):

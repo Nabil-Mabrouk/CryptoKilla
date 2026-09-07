@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
 from app.core.database import Base
+import app.core.models  # noqa: F401 — `users`, référencée par les FK de arena/models.py (C2)
 import app.domain.arena.models  # noqa: F401 — enregistre les tables sur Base.metadata
 
 from app.domain.arena.models import Dynasty, Season, SeasonParam, Agent

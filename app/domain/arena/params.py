@@ -47,6 +47,23 @@ DEFAULT_SEASON_PARAMS: dict[str, object] = {
     "allocation_horaire_par_modele": 50_000,  # placeholder dev, en tokens
     "pool_plancher": 0,  # "À fixer (secret)" — no-op avec un seul agent
     "pool_bonus_audience": 0,  # "À fixer (secret)" — no-op avec un seul agent
+    # C2 — cycle de vie (chapitre 5). Valeurs illustratives de développement ;
+    # le Livre ne les chiffre nulle part (`[PARAM]` sans valeur).
+    "allocation_funeraire": 5_000,  # tokens, budget dédié à la phase funéraire
+    "duree_max_funeraire": 1_800,  # secondes (~30 min, décision 7 du plan)
+    "delai_renaissance": 3_600,  # secondes avant la renaissance de la lignée
+    "taille_max_testament": 2_000,  # caractères
+    "memoire_k_resultats": 5,  # top-k de memory_search
+    # C2 — pool d'engagement (chapitre 6.5). Le Livre déclare EXPLICITEMENT
+    # les coefficients γ/réciprocité/rendements décroissants "secrets"
+    # (N-C06-08/09) — ces valeurs sont des placeholders de développement
+    # clairement documentés comme tels, jamais un vrai barème de saison 1.
+    "n_messages_plein_rendement": 5,  # au-delà, rendements décroissants
+    "poids_message_contextuel": 0.4,  # relatif à 1.0 pour un message substantiel
+    "points_par_citation": 1.0,
+    "points_par_like": 1.0,
+    "points_par_reaction": 1.0,
+    "fenetre_decote_reciprocite": 3_600,  # secondes — décote anti-collusion
 }
 
 

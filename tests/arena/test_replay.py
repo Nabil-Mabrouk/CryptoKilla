@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from sqlalchemy import select
 
+from app.domain.arena.agents.llm_client import ScriptedLLMClient
 from app.domain.arena.engine import simulated_executor
 from app.domain.arena.engine.surveillance import surveillance_tick
 from app.domain.arena.models import CapitalLedger, EventRecord, MarketCandle, OrderbookSnapshot, Position
@@ -37,8 +38,9 @@ async def test_hourly_sequence_is_idempotent(db_session, seeded_agent):
     await _seed_market(db_session, "BTC/EUR", 42_000)
     await _seed_market(db_session, "ETH/EUR", 2_500)
 
-    ran_first = await run_hourly_sequence(db_session, season.id, ["BTC/EUR", "ETH/EUR"])
-    ran_second = await run_hourly_sequence(db_session, season.id, ["BTC/EUR", "ETH/EUR"])
+    llm_client = ScriptedLLMClient()
+    ran_first = await run_hourly_sequence(db_session, season.id, ["BTC/EUR", "ETH/EUR"], llm_client)
+    ran_second = await run_hourly_sequence(db_session, season.id, ["BTC/EUR", "ETH/EUR"], llm_client)
 
     assert ran_first is True
     assert ran_second is False  # N-C12-11 : pas rejoué dans la même heure

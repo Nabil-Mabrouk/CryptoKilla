@@ -20,7 +20,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domain.arena.capture.service import latest_candles, latest_orderbook
 from app.domain.arena.engine import fill_model
 from app.domain.arena.events import emit_event
-from app.domain.arena.models import CapitalLedger, Fill, Order, Position
+from app.domain.arena.models import Agent, CapitalLedger, Citation, Fill, Order, Position
+from app.domain.arena.orchestrator import lifecycle
 from app.domain.arena.params import get_param
 
 
@@ -50,7 +51,14 @@ async def place(db: AsyncSession, order: Order) -> Order:
     part_max_liquidite = await get_param(db, order.season_id, "part_max_liquidite", default=0.05)
     frais_par_ordre = await get_param(db, order.season_id, "frais_par_ordre", default=0.0025)
 
-    size = float(order.size)
+    closing_position: Position | None = None
+    if order.action == "close":
+        closing_position = await db.get(Position, order.position_id)
+        assert closing_position is not None  # garanti par la validation (E-POSITION-UNKNOWN)
+        size = float(closing_position.size)
+    else:
+        size = float(order.size)
+
     if not fill_model.check_liquidity(size, volume_1h, part_max_liquidite):
         order.status = "rejete"
         order.rejected_code = "E-LIQUIDITY"
@@ -108,8 +116,8 @@ async def place(db: AsyncSession, order: Order) -> Order:
         await emit_event(db, season_id=order.season_id, kind="trade.opened", sender=order.agent_id, payload=payload)
 
     elif order.action == "close":
-        position = await db.get(Position, order.position_id)
-        assert position is not None  # garanti par la validation (E-POSITION-UNKNOWN)
+        position = closing_position
+        assert position is not None
         close_side = fill_model.closing_side(position.side)
         fill_price = fill_model.market_fill(ref, hs, slip, close_side)
         await _settle_close(
@@ -174,6 +182,17 @@ async def _settle_close(
     db.add(CapitalLedger(agent_id=agent_id, event_id=None, kind="pnl_realise", amount=result["pnl_brut"]))
     db.add(CapitalLedger(agent_id=agent_id, event_id=None, kind="frais", amount=-result["frais_sortie"]))
 
+    # N-C06-06 : réglées à la clôture GAGNANTE du trade citant, dans la
+    # fenêtre en cours de clôture (Citation.order_id référence l'ordre
+    # d'OUVERTURE, seul porteur de `cites[]` — décision 8 du plan).
+    if opening_fill.order_id is not None:
+        pending_citations = (
+            await db.execute(select(Citation).where(Citation.order_id == opening_fill.order_id, Citation.status == "en_attente"))
+        ).scalars().all()
+        settled_status = "creditee" if result["pnl_net"] > 0 else "non_creditee"
+        for citation in pending_citations:
+            citation.status = settled_status
+
     await emit_event(
         db,
         season_id=season_id,
@@ -191,6 +210,14 @@ async def _settle_close(
             "pnl": result["pnl_net"],
         },
     )
+
+    # Décision 6 du plan : le capital ne change JAMAIS ailleurs que dans
+    # `_settle_close` (frais d'ouverture mis à part, jamais suffisants
+    # seuls pour atteindre le seuil de mort) — seul point de déclenchement
+    # possible pour le constat de mort en continu (N-C05-03).
+    agent = await db.get(Agent, agent_id)
+    assert agent is not None
+    await lifecycle.check_death(db, agent)
 
 
 async def modify(db: AsyncSession, position_id: str, stop_loss: float | None, take_profit: float | None) -> Position:

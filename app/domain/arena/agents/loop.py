@@ -25,10 +25,11 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.domain.arena.agents import tools
+from app.domain.arena.agents import prompt, tools
 from app.domain.arena.agents.llm_client import LLMClient, ToolCall
 from app.domain.arena.log import log
-from app.domain.arena.models import Agent, EventRecord, TokenLedger
+from app.domain.arena.models import Agent, Dynasty, EventRecord, Testament, TokenLedger
+from app.domain.arena.orchestrator import lifecycle
 
 INBOX_POLL_INTERVAL = 5  # secondes — coût nul (une requête SQL), pas de LLM
 SAFETY_NET_INTERVAL = 300  # secondes — réveil forcé même sans nouveauté
@@ -80,7 +81,51 @@ TOOLS_SPEC = [
     {
         "name": "post_message",
         "description": "Publie un message dans le chat public de l'arène.",
-        "input_schema": {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]},
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "text": {"type": "string"},
+                "cites": {"type": "array", "items": {"type": "string"}},
+                "mentions": {"type": "array", "items": {"type": "string"}},
+            },
+            "required": ["text"],
+        },
+    },
+    {
+        "name": "react",
+        "description": "Réagit à un message du chat public.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"message_id": {"type": "string"}, "reaction": {"type": "string"}},
+            "required": ["message_id", "reaction"],
+        },
+    },
+    {
+        "name": "memory_save",
+        "description": "Sauvegarde une entrée dans ta mémoire long terme (typée).",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "type": {"type": "string", "enum": ["episodic", "semantic", "procedural"]},
+                "content": {"type": "string"},
+                "tags": {"type": "array", "items": {"type": "string"}},
+            },
+            "required": ["type", "content"],
+        },
+    },
+    {
+        "name": "memory_search",
+        "description": "Recherche dans ta mémoire long terme (mots-clés).",
+        "input_schema": {
+            "type": "object",
+            "properties": {"query": {"type": "string"}, "type": {"type": "string"}},
+            "required": ["query"],
+        },
+    },
+    {
+        "name": "write_testament",
+        "description": "Rédige et scelle ton testament (phase funéraire uniquement).",
+        "input_schema": {"type": "object", "properties": {"content": {"type": "string"}}, "required": ["content"]},
     },
 ]
 
@@ -90,15 +135,11 @@ _TOOL_FUNCS = {
     "get_portfolio": tools.get_portfolio,
     "read_inbox": tools.read_inbox,
     "post_message": tools.post_message,
+    "react": tools.react,
+    "memory_save": tools.memory_save,
+    "memory_search": tools.memory_search,
+    "write_testament": tools.write_testament,
 }
-
-SYSTEM_PROMPT = """Tu es un agent de trading autonome dans l'arène CryptoKilla.
-Tu trades au comptant (spot), sans levier, sur un marché crypto réel simulé.
-Chaque position ouverte DOIT porter un stop-loss. Un stop ne peut être que
-resserré, jamais élargi. Ton solde de tokens régule ton activité : chaque
-appel d'outil a un coût. Décide en fonction du marché et de ton portefeuille.
-"""  # Minimal pour C1 — le prompt complet (Annexe D, chapitre 18) est un
-# raffinement ultérieur, pas requis pour la DoD C1.
 
 
 async def _has_unread_events(db: AsyncSession, agent: Agent, season_id: str) -> bool:
@@ -120,6 +161,35 @@ async def _has_unread_events(db: AsyncSession, agent: Agent, season_id: str) -> 
 async def _agent_balance(db: AsyncSession, agent_id: str) -> float:
     rows = (await db.execute(select(TokenLedger.amount).where(TokenLedger.agent_id == agent_id))).scalars().all()
     return float(sum(rows))
+
+
+async def _build_system_prompt(db: AsyncSession, agent: Agent, season_id: str) -> str:
+    from app.domain.arena.models import Season, SeasonParam
+
+    dynasty = await db.get(Dynasty, agent.dynasty_id)
+    assert dynasty is not None
+    season = await db.get(Season, season_id)
+    assert season is not None
+
+    param_rows = (
+        await db.execute(select(SeasonParam.name, SeasonParam.value).where(SeasonParam.season_id == season_id))
+    ).all()
+    season_params = {name: value for name, value in param_rows}
+
+    testaments = await lifecycle.lineage_testaments(db, dynasty.id) if agent.generation > 1 else []
+    tool_names = list(tools.FUNERAL_TOOLS) if agent.status == "funeraire" else list(_TOOL_FUNCS.keys())
+
+    return prompt.build_system_prompt(
+        agent_name=f"{dynasty.name}-{agent.generation}",
+        dynasty_name=dynasty.name,
+        model=dynasty.model,
+        personality_id=agent.personality_id,
+        season_params=season_params,
+        season_mode=season.mode,
+        season_end_date=season.end_date.date().isoformat() if season.end_date else None,
+        testaments=testaments,
+        tool_names=tool_names,
+    )
 
 
 async def run_agent_loop(
@@ -167,14 +237,23 @@ async def run_agent_loop(
 
 async def _run_one_cycle(db: AsyncSession, agent: Agent, season_id: str, llm_client: LLMClient) -> None:
     """Un cycle Percevoir/Raisonner/Agir (N-C16-01). `Reprendre` est
-    implicite : c'est simplement la prochaine itération de `run_agent_loop`."""
-    inbox = await tools.read_inbox(db, agent, limit=20)
+    implicite : c'est simplement la prochaine itération de `run_agent_loop`.
+    En phase funéraire (N-C05-05), `read_inbox` n'est pas accessible — le
+    contexte se limite au solde, seul signal utile avant scellement."""
+    system_prompt = await _build_system_prompt(db, agent, season_id)
+    allowed_tools = tools.FUNERAL_TOOLS if agent.status == "funeraire" else set(_TOOL_FUNCS)
+    tools_spec = [spec for spec in TOOLS_SPEC if spec["name"] in allowed_tools]
 
-    context = (
-        f"Solde de tokens : {await _agent_balance(db, agent.id)}\n"
-        f"Événements récents : {inbox['result']['events']}\n"
-    )
-    decision = await llm_client.decide(system_prompt=SYSTEM_PROMPT, context=context, tools=TOOLS_SPEC)
+    if agent.status == "funeraire":
+        context = f"Solde de tokens (allocation funéraire) : {await _agent_balance(db, agent.id)}\n"
+    else:
+        inbox = await tools.read_inbox(db, agent, limit=20)
+        context = (
+            f"Solde de tokens : {await _agent_balance(db, agent.id)}\n"
+            f"Événements récents : {inbox['result']['events']}\n"
+        )
+
+    decision = await llm_client.decide(system_prompt=system_prompt, context=context, tools=tools_spec)
 
     if decision.tokens_consumed:
         db.add(
@@ -182,17 +261,25 @@ async def _run_one_cycle(db: AsyncSession, agent: Agent, season_id: str, llm_cli
         )
 
     for call in decision.tool_calls:
-        await _execute_tool_call(db, agent, season_id, call)
+        await _execute_tool_call(db, agent, season_id, call, allowed_tools)
         balance = await _agent_balance(db, agent.id)
         if balance <= 0:
             break  # N-C16-01 : un cycle en cours va à son terme (appel lancé
             # jamais coupé), mais on n'enchaîne pas d'appel d'outil de plus.
 
     if await _agent_balance(db, agent.id) <= 0:
-        agent.status = "veille_budget"
+        if agent.status == "funeraire":
+            # Premier des deux seuils atteint (budget avant durée, N-C05-06).
+            await lifecycle.end_funeral(db, agent)
+        elif agent.status == "actif":
+            agent.status = "veille_budget"
 
 
-async def _execute_tool_call(db: AsyncSession, agent: Agent, season_id: str, call: ToolCall) -> dict:
+async def _execute_tool_call(
+    db: AsyncSession, agent: Agent, season_id: str, call: ToolCall, allowed_tools: set[str]
+) -> dict:
+    if call.name not in allowed_tools:
+        return {"status": "error", "error_code": "E-SCHEMA"}
     func = _TOOL_FUNCS.get(call.name)
     if func is None:
         return {"status": "error", "error_code": "E-SCHEMA"}

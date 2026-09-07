@@ -39,6 +39,7 @@ from app.domain.arena.engine.surveillance import surveillance_tick
 from app.domain.arena.log import log
 from app.domain.arena.models import Agent, Season
 from app.domain.arena.orchestrator.hourly import run_hourly_sequence
+from app.domain.arena.orchestrator.lifecycle import check_funeral_expirations
 from app.domain.arena.params import get_param
 
 TICK_INTERVAL_SECONDS = 30  # capture + surveillance + check H+0
@@ -57,7 +58,7 @@ async def run_cycle(db: AsyncSession, stop_requested: asyncio.Event) -> None:
 
         await seed_dev_season()
 
-    season_id, agent_id = await _wait_for_season(stop_requested)
+    season_id = await _wait_for_season(stop_requested)
     if season_id is None:  # stop_requested levé avant qu'une saison existe
         return
 
@@ -67,17 +68,19 @@ async def run_cycle(db: AsyncSession, stop_requested: asyncio.Event) -> None:
     llm_client = build_llm_client()
 
     async with httpx.AsyncClient(timeout=10.0) as http_client:
-        tasks = [asyncio.create_task(_tick_loop(http_client, season_id, pairs, stop_requested))]
-        if agent_id is not None:
-            tasks.append(
-                asyncio.create_task(run_agent_loop(SessionLocal, agent_id, season_id, llm_client, stop_requested))
-            )
+        tasks = [
+            asyncio.create_task(_tick_loop(http_client, season_id, pairs, llm_client, stop_requested)),
+            asyncio.create_task(_agent_supervisor(season_id, llm_client, stop_requested)),
+        ]
         await asyncio.gather(*tasks, return_exceptions=True)
 
 
-async def _wait_for_season(stop_requested: asyncio.Event) -> tuple[str | None, str | None]:
-    """Attend qu'une saison (et, si possible, un agent) existe — un worker
-    peut démarrer avant toute configuration de saison en production.
+async def _wait_for_season(stop_requested: asyncio.Event) -> str | None:
+    """Attend qu'une saison existe — un worker peut démarrer avant toute
+    configuration de saison en production. Ne dépend plus de la présence
+    d'un agent (C2, décision multi-agents) : `_agent_supervisor` découvre
+    et suit les agents vivants dynamiquement, y compris ceux nés en cours
+    de route (renaissance, N-C12-13).
 
     Tolère aussi une base pas encore migrée : `docker-compose.yml` ne fait
     dépendre `backend`/`worker` que de `db: service_healthy`, pas de la fin
@@ -95,21 +98,43 @@ async def _wait_for_season(stop_requested: asyncio.Event) -> tuple[str | None, s
             async with SessionLocal() as db:
                 season = (await db.execute(select(Season).limit(1))).scalar_one_or_none()
                 if season is not None:
-                    agent = (
-                        await db.execute(select(Agent).where(Agent.status != "mort").limit(1))
-                    ).scalar_one_or_none()
-                    return season.id, (agent.id if agent else None)
+                    return season.id
         except (OperationalError, ProgrammingError) as exc:
             print(f"worker_cycle: base pas encore prête ({exc!r}) — nouvelle tentative dans {NO_SEASON_RETRY_SECONDS}s")
         try:
             await asyncio.wait_for(stop_requested.wait(), timeout=NO_SEASON_RETRY_SECONDS)
         except asyncio.TimeoutError:
             pass
-    return None, None
+    return None
+
+
+async def _agent_supervisor(season_id: str, llm_client, stop_requested: asyncio.Event) -> None:
+    """Une tâche `run_agent_loop` par agent vivant, démarrée dynamiquement
+    — un seul agent en C1, potentiellement plusieurs lignées/générations
+    en C2 (renaissance, N-C05-08). Un agent devenu `mort` laisse sa propre
+    tâche se terminer d'elle-même (`run_agent_loop`, voir sa docstring) ;
+    ce superviseur ne fait qu'ajouter les tâches manquantes, jamais en
+    retirer."""
+    running: dict[str, asyncio.Task] = {}
+    while not stop_requested.is_set():
+        async with SessionLocal() as db:
+            agent_ids = (
+                await db.execute(select(Agent.id).where(Agent.status != "mort"))
+            ).scalars().all()
+        for agent_id in agent_ids:
+            if agent_id not in running or running[agent_id].done():
+                running[agent_id] = asyncio.create_task(
+                    run_agent_loop(SessionLocal, agent_id, season_id, llm_client, stop_requested)
+                )
+        try:
+            await asyncio.wait_for(stop_requested.wait(), timeout=TICK_INTERVAL_SECONDS)
+        except asyncio.TimeoutError:
+            pass
+    await asyncio.gather(*running.values(), return_exceptions=True)
 
 
 async def _tick_loop(
-    http_client: httpx.AsyncClient, season_id: str, pairs: list[str], stop_requested: asyncio.Event
+    http_client: httpx.AsyncClient, season_id: str, pairs: list[str], llm_client, stop_requested: asyncio.Event
 ) -> None:
     """Chaque étape est isolée dans son propre `try/except` : une exception
     dans l'une ne doit jamais arrêter les suivantes NI tuer cette tâche
@@ -120,7 +145,8 @@ async def _tick_loop(
     steps = (
         ("capture", lambda db: capture_tick(db, http_client, pairs)),
         ("surveillance", lambda db: surveillance_tick(db, season_id, pairs)),
-        ("hourly", lambda db: run_hourly_sequence(db, season_id, pairs)),
+        ("funeral_expirations", lambda db: check_funeral_expirations(db, season_id)),
+        ("hourly", lambda db: run_hourly_sequence(db, season_id, pairs, llm_client)),
     )
     while not stop_requested.is_set():
         for component, step in steps:
