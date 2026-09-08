@@ -180,7 +180,8 @@
         "paramName": "Parameter",
         "paramValue": "Value",
         "visibility": "Visibility",
-        "error": "Error"
+        "error": "Error",
+        "details": "Details"
       }
     },
     "leads": {

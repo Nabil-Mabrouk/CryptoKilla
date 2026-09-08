@@ -452,6 +452,7 @@ function LogsPanel() {
               <th className="p-2">{t("admin.arena.columns.level")}</th>
               <th className="p-2">{t("admin.arena.columns.component")}</th>
               <th className="p-2">{t("admin.arena.columns.message")}</th>
+              <th className="p-2">{t("admin.arena.columns.details")}</th>
             </tr>
           </thead>
           <tbody>
@@ -463,6 +464,9 @@ function LogsPanel() {
                 </td>
                 <td className="p-2 mono">{l.component}</td>
                 <td className="p-2">{l.message}</td>
+                <td className="p-2">
+                  {l.details != null && <pre className="whitespace-pre-wrap text-xs">{JSON.stringify(l.details)}</pre>}
+                </td>
               </tr>
             ))}
           </tbody>
