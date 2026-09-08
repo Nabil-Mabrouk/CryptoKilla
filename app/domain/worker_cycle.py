@@ -36,7 +36,7 @@ from app.domain.arena.agents.llm_client import build_llm_client
 from app.domain.arena.agents.loop import run_agent_loop
 from app.domain.arena.capture.service import capture_tick
 from app.domain.arena.engine.surveillance import surveillance_tick
-from app.domain.arena.log import log
+from app.domain.arena.log import error_details, log
 from app.domain.arena.models import Agent, Season
 from app.domain.arena.orchestrator.hourly import run_hourly_sequence
 from app.domain.arena.orchestrator.lifecycle import check_funeral_expirations
@@ -157,7 +157,7 @@ async def _tick_loop(
                 print(f"worker_cycle: échec étape={component}: {exc!r}")
                 try:
                     async with SessionLocal() as log_db:
-                        await log(log_db, "error", component, f"Échec du tick {component}", {"error": repr(exc)})
+                        await log(log_db, "error", component, f"Échec du tick {component}", error_details(exc))
                         await log_db.commit()
                 except Exception:  # noqa: BLE001 — le logging lui-même ne doit jamais faire tomber le tick
                     pass

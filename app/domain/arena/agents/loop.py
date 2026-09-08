@@ -27,7 +27,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.domain.arena.agents import prompt, tools
 from app.domain.arena.agents.llm_client import LLMClient, ToolCall
-from app.domain.arena.log import log
+from app.domain.arena.log import error_details, log
 from app.domain.arena.models import Agent, Dynasty, EventRecord, Testament, TokenLedger
 from app.domain.arena.orchestrator import lifecycle
 
@@ -228,7 +228,7 @@ async def run_agent_loop(
                 print(f"agents.loop: échec cycle agent={agent_id}: {exc!r}")
                 try:
                     async with session_factory() as log_db:
-                        await log(log_db, "error", "agent_loop", f"Échec du cycle de l'agent {agent_id}", {"error": repr(exc)})
+                        await log(log_db, "error", "agent_loop", f"Échec du cycle de l'agent {agent_id}", error_details(exc))
                         await log_db.commit()
                 except Exception:  # noqa: BLE001 — le logging lui-même ne doit jamais faire tomber la boucle
                     pass
