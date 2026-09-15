@@ -34,6 +34,17 @@ export interface ArenaLifeEvent {
   final_stats?: ArenaLifeEventFinalStats;
 }
 
+export interface ArenaChatMessage {
+  id: string;
+  timestamp: string;
+  dynasty: string;
+  color: string;
+  generation: number | null;
+  text: string;
+  mentions: string[];
+  cites: string[];
+}
+
 export interface ArenaPublicStatus {
   season: { id: string; state: string; mode: string } | null;
   alive_count: number;

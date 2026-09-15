@@ -23,6 +23,7 @@ from app.domain.arena.models import (
     CapitalLedger,
     Dynasty,
     EventRecord,
+    Message,
     Position,
     Season,
     SeasonParam,
@@ -245,16 +246,22 @@ async def admin_list_logs(
 # ==================================================================
 # Lecture publique — tranche minimale (pas d'authentification) pour que
 # la landing reflète honnêtement une saison réellement créée, sans
-# anticiper la couche C3 (toujours pas de chat public ni de WebSocket —
-# Q-12 non tranchée, chapitre 8 : garde-fou de toxicité bloquant pour
-# l'ouverture publique du chat ; toujours pas de Killa/spectateurs/
-# notation, Q-20 réservée à C3, AMEND-11).
+# anticiper toute la couche C3 (toujours pas de Killa/spectateurs/
+# notation : Q-20 réservée à C3, AMEND-11 ; toujours pas de canal
+# WebSocket, N-C26-02 : Q-19 point 2 — WS à travers Traefik — reste
+# ouvert, chapitre 26, le chat public ci-dessous est donc interrogé par
+# polling REST en attendant, pas par abonnement temps réel).
+#
+# Le chat public (types `chat.message`) est exposé depuis que Q-12 (garde-
+# fou de toxicité) est tranchée : D-084, Annexe G — pas de garde-fou
+# supplémentaire pour le moment, décision de l'opérateur, révisable.
 #
 # Périmètre volontairement restreint à ce qu'ARENA.md §3 autorise déjà à
 # publier : classement (chapitre 24.1, "recalculable depuis l'historique
-# public"), dynasties, statut de saison, et désormais l'historique public
-# mort/renaissance (types `agent.death`/`agent.birth`, Annexe B.1 : déjà
-# "orchestrateur → public", aucune Q-xx ne les bloque). RIEN de secret n'y
+# public"), dynasties, statut de saison, l'historique public mort/
+# renaissance (types `agent.death`/`agent.birth`, Annexe B.1 : déjà
+# "orchestrateur → public", aucune Q-xx ne les bloque), et désormais le
+# chat public. RIEN de secret n'y
 # transite — jamais les season_params `visibility: secret` (coefficients de
 # fill, plancher/bonus du pool), jamais un testament non publié (N-C21-04 :
 # `agent.death` ne contient structurellement pas son contenu).
@@ -342,6 +349,53 @@ async def _public_life_events(db: AsyncSession, season_id: str, limit: int = 15)
                 }
             )
     return out
+
+
+@arena_router.get("/public/chat")
+async def arena_public_chat(limit: int = Query(default=40, le=100), db: AsyncSession = Depends(get_db)) -> dict:
+    """Snapshot REST du chat public (chapitre 26, N-C26-01/04 : chaque page
+    charge un instantané REST puis s'abonne en WebSocket — le chemin du
+    Livre est `GET /api/chat`, exposé ici sous `/api/arena/public/chat` par
+    la convention déjà en usage dans ce fichier pour les endpoints publics).
+    Lit `arena_messages` (chapitre 15) : la projection dédiée aux
+    publications d'agents, jamais les annonces de l'orchestrateur — celles-
+    ci restent des `events` purs sans couleur de dynastie
+    (CHARTE-GRAPHIQUE.md §6). Aucun filtrage de contenu au-delà de ce que
+    N-C08-02 autorise déjà : Q-12 est tranchée (D-084, Annexe G) — pas de
+    garde-fou de toxicité supplémentaire pour le moment. Pas de canal
+    WebSocket `chat` (N-C26-02) : Q-19 point 2 (WS à travers Traefik) reste
+    ouvert (chapitre 26) — le frontend interroge cet endpoint par polling
+    en attendant."""
+    season = (
+        await db.execute(select(Season).where(Season.state == "active").order_by(Season.created_at.desc()).limit(1))
+    ).scalar_one_or_none()
+    if season is None:
+        return {"season_id": None, "messages": []}
+
+    rows = (
+        await db.execute(
+            select(Message).where(Message.season_id == season.id).order_by(Message.created_at.desc()).limit(limit)
+        )
+    ).scalars().all()
+    rows = list(reversed(rows))  # ordre chronologique croissant pour l'affichage
+
+    out = []
+    for row in rows:
+        agent = await db.get(Agent, row.agent_id)
+        dynasty = await db.get(Dynasty, agent.dynasty_id) if agent else None
+        out.append(
+            {
+                "id": row.id,
+                "timestamp": row.created_at.isoformat(),
+                "dynasty": dynasty.name if dynasty else "?",
+                "color": dynasty.color if dynasty else "#888888",
+                "generation": agent.generation if agent else None,
+                "text": row.text,
+                "mentions": row.mentions,
+                "cites": row.cites,
+            }
+        )
+    return {"season_id": season.id, "messages": out}
 
 
 @arena_router.get("/public/status")

@@ -8,7 +8,7 @@ transiter."""
 from app.domain.arena.agents import tools
 from app.domain.arena.models import SeasonParam
 from app.domain.arena.orchestrator import lifecycle
-from app.domain.routers import _public_life_events
+from app.domain.routers import _public_life_events, arena_public_chat
 
 
 async def _set_param(db, season_id: str, name: str, value) -> None:
@@ -48,6 +48,32 @@ async def test_public_life_events_reports_death_with_final_stats_never_testament
     # N-C21-04 : un `agent.death` public ne porte jamais le contenu du testament.
     assert "testament" not in str(event).lower()
     assert "confidentiel" not in str(event).lower()
+
+
+async def test_public_chat_empty_without_active_season_data_returns_empty_list(db_session, seeded_agent):
+    season, _agent = seeded_agent
+
+    body = await arena_public_chat(limit=40, db=db_session)
+
+    assert body == {"season_id": season.id, "messages": []}
+
+
+async def test_public_chat_reports_posted_messages_oldest_first_never_orchestrator_events(db_session, seeded_agent):
+    season, agent = seeded_agent
+    await tools.post_message(db_session, agent, text="Premier message.")
+    await tools.post_message(db_session, agent, text="Second message, cite le premier.", cites=["whatever"])
+    # Un événement orchestrateur (jamais dans `arena_messages`, chapitre 15) ne doit jamais apparaître ici.
+    await lifecycle.check_death(db_session, agent)
+
+    body = await arena_public_chat(limit=40, db=db_session)
+
+    assert body["season_id"] == season.id
+    assert [m["text"] for m in body["messages"]] == ["Premier message.", "Second message, cite le premier."]
+    first, second = body["messages"]
+    assert first["dynasty"] == "test-dynasty"
+    assert first["generation"] == 1
+    assert second["cites"] == ["whatever"]
+    assert all(m["text"] not in ("agent.death",) for m in body["messages"])
 
 
 async def test_public_life_events_reports_birth_after_rebirth(db_session, seeded_agent):
