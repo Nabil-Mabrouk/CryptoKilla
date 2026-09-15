@@ -124,6 +124,12 @@ Format : `D-<numéro>` — énoncé — chapitre(s) propriétaire(s) — alterna
 | D-082 (= AMEND-10) | Préséance à 3 étages (contrat structurel > livre > amendement explicite) ; consignes vivent dans ARENA.md | Chapitre 0.1 | Consignes insérées dans AGENTS.md/MODULES.md (exclues, régénérés par `copier update`) |
 | D-083 (= AMEND-11) | Cœur de l'arène hors `MODULE_AGENTIC` ; Killa/spectateurs/notation restent une option ouverte (Q-20) | Chapitre 11.3, 12, 16, 22, 23, Annexe D | `MODULE_AGENTIC` pour le cœur du jeu (exclu) |
 
+### Décisions post-rédaction (tranchées par l'opérateur en cours de développement C3)
+
+| D | Énoncé | Chapitre(s) | Alternative écartée |
+|---|---|---|---|
+| D-084 | Q-12 tranchée : aucun garde-fou de toxicité supplémentaire pour l'affichage public du chat, pour le moment — décision de l'opérateur (2026-09-15), révisable avant une ouverture publique élargie si le besoin apparaît | Chapitre 8, 30, 36 | Garde-fou de modération actif dès l'ouverture publique du chat (reporté, pas exclu) |
+
 ## G.2 — Questions ouvertes — état consolidé
 
 Reprise telle quelle, statut par question :
@@ -148,8 +154,10 @@ Reprise telle quelle, statut par question :
   bloquante v1 (saison datée).
 - **Q-11** (personnalité identique à la renaissance ?) — à trancher avant
   saison 1.
-- **Q-12** (garde-fou de toxicité sur l'affichage public du chat) —
-  **bloquante pour l'ouverture publique** (chapitre 36).
+- **Q-12** — **TRANCHÉE** (D-084, post-rédaction, 2026-09-15) : aucun
+  garde-fou de toxicité supplémentaire pour l'affichage public du chat,
+  pour le moment — décision de l'opérateur, révisable avant une ouverture
+  publique élargie si le besoin apparaît.
 - **Q-13** (embeddings : local vs API) — à trancher en couche C2.
 - **Q-14** (messages des spectateurs dans le chat) — reportée (saison
   future).
@@ -167,11 +175,10 @@ Reprise telle quelle, statut par question :
 - **Q-20** (Killa/spectateurs/notation sur `MODULE_AGENTIC` ou en
   domaine) — à trancher en couche C3 (AMEND-11).
 
-**État final** : 20 questions recensées, 2 tranchées (Q-04, Q-08), 18
-encore ouvertes — dont 1 bloquante pour le gel du livre (Q-19), 6 à
-trancher avant le lancement de la saison 1 (Q-01, Q-02, Q-05, Q-06, Q-11,
-et Q-12 pour l'ouverture publique spécifiquement), 2 à connotation
-juridique (Q-16, Q-17), le reste non bloquant ou reporté.
+**État final** : 20 questions recensées, 3 tranchées (Q-04, Q-08, Q-12), 17
+encore ouvertes — dont 1 bloquante pour le gel du livre (Q-19), 5 à
+trancher avant le lancement de la saison 1 (Q-01, Q-02, Q-05, Q-06, Q-11),
+2 à connotation juridique (Q-16, Q-17), le reste non bloquant ou reporté.
 
 ## Checklist de conformité
 

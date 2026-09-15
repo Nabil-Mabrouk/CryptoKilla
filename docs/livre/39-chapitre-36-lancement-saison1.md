@@ -14,7 +14,8 @@ de chaos (chapitre 35) passés.
 disclaimers en place (chapitre 30).
 
 **Légal** — Q-16 (RGPD) traitée ; **Q-12** (garde-fou de toxicité du
-chat) **tranchée avant toute ouverture publique du chat**.
+chat) **tranchée** (D-084 : aucun garde-fou pour le moment, décision de
+l'opérateur — condition remplie, révisable si le besoin apparaît).
 
 **Paramètres** — l'Annexe E porte des valeurs fixées pour toutes les
 entrées de la saison 1 ; en particulier, **Q-01, Q-02, Q-05, Q-06, Q-11**

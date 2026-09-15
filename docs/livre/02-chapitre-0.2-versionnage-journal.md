@@ -52,7 +52,7 @@ plus tardif, sans empêcher le développement de commencer.
 | Q-09 | Compaction de contexte facturée ? | Non bloquante | Aucun jalon précis |
 | Q-10 | Plafond/distillation de l'héritage | Non bloquante | Saisons très longues seulement |
 | Q-11 | Personnalité identique à la renaissance ? | Non bloquante | Avant saison 1 |
-| Q-12 | Garde-fou de toxicité du chat public | Non bloquante pour v1.0 | **Bloquante pour l'ouverture publique du chat** (couche C3/C4, chapitre 36) |
+| Q-12 | Garde-fou de toxicité du chat public | **Tranchée** (D-084) | — |
 | Q-13 | Embeddings : local ou API | Non bloquante | Avant couche C2 |
 | Q-14 | Messages des spectateurs dans le chat | **Reportée** | Saison future, hors périmètre v1 |
 | Q-15 | Monétisation | **Reportée** | Hors périmètre du livre (chapitre 25) |

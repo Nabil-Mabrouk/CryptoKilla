@@ -118,5 +118,5 @@ toujours par trancher qui avait raison.
 
 - [x] Règle « mentir est permis, l'orchestrateur fait foi » présente (N-C08-02).
 - [x] Scène de chat exemple conforme aux schémas de l'Annexe B.
-- [x] `[OUVERT : Q-12]` — faut-il un garde-fou de toxicité pour l'affichage public du chat ? Signalée, non tranchée (bloquante pour l'ouverture publique, chapitre 36).
+- [x] Q-12 (garde-fou de toxicité pour l'affichage public du chat) — **TRANCHÉE** (D-084, Annexe G) : aucun garde-fou pour le moment, décision de l'opérateur, révisable.
 - [x] Aucune modération de contenu au-delà du filtre d'éligibilité au pool ; aucun canal supplémentaire créé.

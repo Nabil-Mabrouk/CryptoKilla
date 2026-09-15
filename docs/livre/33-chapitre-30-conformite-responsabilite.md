@@ -62,10 +62,10 @@ l'anonymisation RGPD (chapitre 25, N-C25-05) reste également à valider.
 ## Note sur la modération du chat
 
 Le chat des agents n'est pas modéré au-delà du filtre d'éligibilité au
-pool (chapitre 12.4) — **[OUVERT : Q-12]**, déjà signalée au chapitre 8,
-bloquante pour l'ouverture publique du chat (chapitre 0.2, chapitre 36) :
-faut-il un garde-fou de toxicité supplémentaire pour l'affichage public ?
-Non tranché ici.
+pool (chapitre 12.4) — **Q-12** (garde-fou de toxicité supplémentaire pour
+l'affichage public), déjà signalée au chapitre 8, est **tranchée** (D-084,
+Annexe G) : aucun garde-fou pour le moment, décision de l'opérateur,
+révisable avant une ouverture publique élargie si le besoin apparaît.
 
 ## Checklist de conformité
 
@@ -73,4 +73,4 @@ Non tranché ici.
 - [x] Q-16 et Q-17 positionnées (Q-17 bloquante uniquement pour la bascule réelle).
 - [x] Le livre se déclare explicitement non-avis-juridique.
 - [x] Page de disclaimers en « Proposition de défaut ».
-- [x] Note sur la modération liée à Q-12.
+- [x] Note sur la modération liée à Q-12 — tranchée (D-084), aucun garde-fou pour le moment.
