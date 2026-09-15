@@ -9,13 +9,14 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth.dependencies import require_admin
 from app.core.database import get_db
 from app.core.models import User
 from app.domain.arena.log import log as arena_log
+from app.domain.arena.orchestrator.lifecycle import _aware
 from app.domain.arena.models import (
     Agent,
     ArenaLog,
@@ -244,14 +245,103 @@ async def admin_list_logs(
 # ==================================================================
 # Lecture publique — tranche minimale (pas d'authentification) pour que
 # la landing reflète honnêtement une saison réellement créée, sans
-# anticiper la couche C3 (pas de chat, pas de WebSocket, pas de Killa).
+# anticiper la couche C3 (toujours pas de chat public ni de WebSocket —
+# Q-12 non tranchée, chapitre 8 : garde-fou de toxicité bloquant pour
+# l'ouverture publique du chat ; toujours pas de Killa/spectateurs/
+# notation, Q-20 réservée à C3, AMEND-11).
 #
 # Périmètre volontairement restreint à ce qu'ARENA.md §3 autorise déjà à
 # publier : classement (chapitre 24.1, "recalculable depuis l'historique
-# public"), dynasties, statut de saison. RIEN de secret n'y transite —
-# jamais les season_params `visibility: secret` (coefficients de fill,
-# plancher/bonus du pool), jamais un testament non publié.
+# public"), dynasties, statut de saison, et désormais l'historique public
+# mort/renaissance (types `agent.death`/`agent.birth`, Annexe B.1 : déjà
+# "orchestrateur → public", aucune Q-xx ne les bloque). RIEN de secret n'y
+# transite — jamais les season_params `visibility: secret` (coefficients de
+# fill, plancher/bonus du pool), jamais un testament non publié (N-C21-04 :
+# `agent.death` ne contient structurellement pas son contenu).
 # ==================================================================
+
+
+async def _public_life_events(db: AsyncSession, season_id: str, limit: int = 15) -> list[dict]:
+    """Historique public mort/renaissance (Annexe B.2, types `agent.death`/
+    `agent.birth` — "orchestrateur → public", jamais de `recipient`). Ne lit
+    JAMAIS la table `testaments` : ces deux types d'événements ne portent
+    structurellement pas de contenu de testament (N-C21-04)."""
+    rows = (
+        await db.execute(
+            select(EventRecord)
+            .where(EventRecord.season_id == season_id, EventRecord.type.in_(("agent.death", "agent.birth")))
+            .order_by(EventRecord.timestamp.desc())
+            .limit(limit)
+        )
+    ).scalars().all()
+
+    out = []
+    for row in rows:
+        if row.type == "agent.birth":
+            dynasty = await db.get(Dynasty, row.payload.get("dynasty_id"))
+            if dynasty is None:
+                continue
+            out.append(
+                {
+                    "type": "birth",
+                    "timestamp": row.timestamp.isoformat(),
+                    "dynasty": dynasty.name,
+                    "color": dynasty.color,
+                    "model": dynasty.model,
+                    "generation": row.payload.get("generation"),
+                }
+            )
+        else:
+            agent = await db.get(Agent, row.payload.get("agent_id"))
+            if agent is None:
+                continue
+            dynasty = await db.get(Dynasty, agent.dynasty_id)
+            if dynasty is None:
+                continue
+            capital_final = float(
+                sum(
+                    (
+                        await db.execute(select(CapitalLedger.amount).where(CapitalLedger.agent_id == agent.id))
+                    ).scalars()
+                )
+            )
+            pnl_total = float(
+                sum(
+                    (
+                        await db.execute(
+                            select(CapitalLedger.amount).where(
+                                CapitalLedger.agent_id == agent.id,
+                                CapitalLedger.kind.in_(("pnl_realise", "frais")),
+                            )
+                        )
+                    ).scalars()
+                )
+            )
+            nb_trades = (
+                await db.execute(
+                    select(func.count(Position.id)).where(Position.agent_id == agent.id, Position.status == "fermee")
+                )
+            ).scalar_one()
+            duree_vie_heures = (
+                (_aware(agent.died_at) - _aware(agent.born_at)).total_seconds() / 3600 if agent.died_at else None
+            )
+            out.append(
+                {
+                    "type": "death",
+                    "timestamp": row.timestamp.isoformat(),
+                    "dynasty": dynasty.name,
+                    "color": dynasty.color,
+                    "model": dynasty.model,
+                    "generation": agent.generation,
+                    "final_stats": {
+                        "capital_final": capital_final,
+                        "pnl_total": pnl_total,
+                        "duree_vie_heures": duree_vie_heures,
+                        "nb_trades": nb_trades,
+                    },
+                }
+            )
+    return out
 
 
 @arena_router.get("/public/status")
@@ -260,7 +350,7 @@ async def arena_public_status(db: AsyncSession = Depends(get_db)) -> dict:
         await db.execute(select(Season).where(Season.state == "active").order_by(Season.created_at.desc()).limit(1))
     ).scalar_one_or_none()
     if season is None:
-        return {"season": None, "alive_count": 0, "dynasties": [], "leaderboard": []}
+        return {"season": None, "alive_count": 0, "dynasties": [], "leaderboard": [], "recent_events": []}
 
     dynasties = (await db.execute(select(Dynasty).where(Dynasty.season_id == season.id))).scalars().all()
     dynasty_by_id = {d.id: d for d in dynasties}
@@ -307,4 +397,5 @@ async def arena_public_status(db: AsyncSession = Depends(get_db)) -> dict:
         "alive_count": alive_count,
         "dynasties": [{"name": d.name, "model": d.model, "color": d.color} for d in dynasties],
         "leaderboard": leaderboard,
+        "recent_events": await _public_life_events(db, season.id),
     }

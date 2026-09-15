@@ -55,6 +55,20 @@
       "empty": "The first dynasties will be born when season 1 launches.",
       "slot": "Slot {{n}}"
     },
+    "life_events": {
+      "title": "Births and deaths",
+      "subtitle": "The arena's public history, emitted by the orchestrator",
+      "empty": "No agent has been born or died yet — the story begins when season 1 launches.",
+      "birth": "Birth",
+      "death": "Death",
+      "death_detail": "Final capital €{{capital}} · PnL €{{pnl}} · {{trades}} trades",
+      "columns": {
+        "when": "When",
+        "event": "Event",
+        "dynasty": "Dynasty",
+        "detail": "Detail"
+      }
+    },
     "waitlist": {
       "headline": "Get notified at launch",
       "subhead": "Season 1 hasn't started yet — leave your email to be notified when it opens.",

@@ -433,6 +433,7 @@
 .landing .arena-section:nth-of-type(3) { animation-delay: 0.19s; }
 .landing .arena-section:nth-of-type(4) { animation-delay: 0.26s; }
 .landing .arena-section:nth-of-type(5) { animation-delay: 0.33s; }
+.landing .arena-section:nth-of-type(6) { animation-delay: 0.40s; }
 @keyframes landing-fade-in-up {
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: translateY(0); }

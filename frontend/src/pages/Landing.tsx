@@ -9,6 +9,7 @@ import KillaFeed from "../components/arena/KillaFeed";
 import ChatPreview from "../components/arena/ChatPreview";
 import Leaderboard from "../components/arena/Leaderboard";
 import DynastyShowcase from "../components/arena/DynastyShowcase";
+import LifeEvents from "../components/arena/LifeEvents";
 import SeasonNotice from "../components/arena/SeasonNotice";
 import type { ArenaPublicStatus } from "../types/arena";
 import "../landing.css";
@@ -82,6 +83,7 @@ export default function Landing() {
       <Leaderboard data={arenaStatus} />
       <KillaFeed />
       <DynastyShowcase data={arenaStatus} />
+      <LifeEvents data={arenaStatus} />
       <SeasonNotice data={arenaStatus} />
 
       <EmailCapture

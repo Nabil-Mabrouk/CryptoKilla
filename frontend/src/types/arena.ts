@@ -17,9 +17,27 @@ export interface ArenaDynastyRow {
   color: string;
 }
 
+export interface ArenaLifeEventFinalStats {
+  capital_final: number;
+  pnl_total: number;
+  duree_vie_heures: number | null;
+  nb_trades: number;
+}
+
+export interface ArenaLifeEvent {
+  type: "birth" | "death";
+  timestamp: string;
+  dynasty: string;
+  color: string;
+  model: string;
+  generation: number;
+  final_stats?: ArenaLifeEventFinalStats;
+}
+
 export interface ArenaPublicStatus {
   season: { id: string; state: string; mode: string } | null;
   alive_count: number;
   dynasties: ArenaDynastyRow[];
   leaderboard: ArenaLeaderboardRow[];
+  recent_events: ArenaLifeEvent[];
 }
